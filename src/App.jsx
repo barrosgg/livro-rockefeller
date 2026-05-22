@@ -8,13 +8,17 @@ import PedidoDetalhe from './pages/PedidoDetalhe.jsx';
 import MeusTrabalhos from './pages/MeusTrabalhos.jsx';
 import Admin from './pages/Admin.jsx';
 import PedidoPublico from './pages/PedidoPublico.jsx';
+import Logo from './components/Logo.jsx';
 
 function Topbar() {
   const { profile, signOut } = useAuth();
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
   return (
     <header className="topbar">
-      <div className="brand">Caderno da Fazenda Rockefeller</div>
+      <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Logo size={36} />
+        <span>Caderno da Fazenda Rockefeller</span>
+      </div>
       <nav>
         <NavLink to="/pedidos" className={({isActive}) => isActive ? 'active' : ''}>Pedidos</NavLink>
         {isManager && <NavLink to="/novo" className={({isActive}) => isActive ? 'active' : ''}>Novo Pedido</NavLink>}

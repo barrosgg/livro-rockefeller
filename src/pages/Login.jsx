@@ -1,10 +1,14 @@
 import { useAuth } from '../lib/auth.jsx';
+import Logo from '../components/Logo.jsx';
 
 export default function Login() {
   const { signInDiscord } = useAuth();
   return (
     <div className="login-wrap">
       <div className="page login-card">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+          <Logo size={96} />
+        </div>
         <div className="seal">Anno Domini MCM</div>
         <h1 className="mt-2">Caderno da Fazenda Rockefeller</h1>
         <p className="ornament">~ Pedidos, Produção & Pagamentos ~</p>
