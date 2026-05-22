@@ -226,7 +226,17 @@ input[type="email"], input[type="password"], textarea, select {
   color: var(--ink);
   outline: none;
   transition: border-color .15s, box-shadow .15s;
+  min-width: 0;             /* permite que flex respeite tamanho fixo */
+  width: 100%;              /* default: ocupa o container (override por inline) */
 }
+
+/* Remove botões de spin nativos do input number — eles bagunçam o text-align */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
 input:hover, textarea:hover, select:hover { border-color: var(--gold-soft); }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
   border-color: var(--gold);
@@ -264,6 +274,9 @@ table.book .num, .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* Inputs numéricos dentro de células .num — alinhamento perfeito com o cabeçalho */
+table.book td.num input { text-align: right; }
 
 /* ---------- Badges ---------- */
 .badge {
