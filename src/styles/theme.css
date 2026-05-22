@@ -1,46 +1,35 @@
 /* =====================================================================
-   Caderno da Fazenda Rockefeller — tema "Art Déco Stationery" v3
-   Inspiração: identidade Mâxico (preto profundo · ouro champanhe ·
-   ivory) com tipografia Italiana/Marcellus (didone refinada).
+   Caderno da Fazenda Rockefeller — tema clean editorial
+   Playfair Display (títulos) + Lora (corpo) · fundo cream claro
+   · ouro como acento sutil.
    ===================================================================== */
 
 :root {
-  /* Pretos & ivories */
-  --black:        #08070a;
-  --black-2:      #11100c;
-  --black-3:      #1c1812;
-  --ink:          #14110a;
-  --ink-soft:     #2a2418;
-  --ink-mute:     #6e6450;
-  --ink-faded:    #9b9078;
-  --ivory:        #f3ecdc;
-  --ivory-soft:   #faf4e2;
-  --ivory-warm:   #ebe0c4;
+  /* Papel claro */
+  --bg:           #f5f0e4;        /* fundo da app (não preto) */
+  --paper:        #fbf6e8;        /* página/card */
+  --paper-soft:   #fdf9ed;        /* alternativo + claro */
+  --paper-edge:   #e6dcc0;        /* bordas/linhas claras */
 
-  /* Ouro champanhe / cobre */
-  --gold-1:       #e6c068;
-  --gold:         #c9a548;
-  --gold-2:       #a08130;
-  --gold-deep:    #6e5616;
+  /* Tintas */
+  --ink:          #2c2418;        /* texto principal */
+  --ink-soft:     #4a3f2c;
+  --ink-mute:     #7d6f54;
+  --ink-faded:    #a89a80;
 
-  /* Acentos */
+  /* Ouro suave (acento) */
+  --gold:         #b08d3d;
+  --gold-deep:    #8a6b21;
+  --gold-soft:    #d4b574;
+
+  /* Acentos secundários */
   --burgundy:     #842419;
-  --burgundy-1:   #a73a2a;
-  --olive:        #4a5535;
-  --olive-soft:   #6e7a52;
+  --olive:        #5a6b40;
+  --olive-soft:   #7a8a60;
 
   /* UI */
-  --r:            4px;
-  --r-sm:         2px;
-  --hairline:     1px solid var(--gold-2);
-
-  /* Padrão pinstripe dourado sutil (fundo body) */
-  --gold-pinstripe:
-    repeating-linear-gradient(
-      45deg,
-      rgba(201,165,72,0) 0 14px,
-      rgba(201,165,72,.025) 14px 15px
-    );
+  --r:            6px;
+  --r-sm:         3px;
 }
 
 /* ---------- Base ---------- */
@@ -48,434 +37,348 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background:
-    var(--gold-pinstripe),
-    radial-gradient(1200px 700px at 50% -200px, #1e1a0e 0%, var(--black-2) 55%, var(--black) 100%);
+  background: var(--bg);
   color: var(--ink);
-  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  font-size: 16.5px;
-  line-height: 1.55;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a { color: var(--gold-deep); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
-a:hover { border-bottom-color: var(--gold-2); }
+a { color: var(--gold-deep); text-decoration: none; transition: color .15s; }
+a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold-soft); }
 
-/* ---------- Tipografia hierárquica ----------
-   Italiana → display/h1 (look "MÁXICO")
-   Marcellus → títulos e botões (elegante, refinado)
-   Marcellus SC → labels, navegação, badges (small caps)
-   Cormorant Garamond → corpo, números, parágrafos
-*/
+/* ---------- Tipografia ---------- */
 h1, .h1 {
-  font-family: 'Italiana', 'Cormorant Garamond', serif;
-  font-weight: 400;
-  font-size: 2.6rem;
-  letter-spacing: .04em;
-  line-height: 1;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  font-size: 1.7rem;
+  letter-spacing: -.005em;
+  line-height: 1.2;
   color: var(--ink);
-  margin: 0 0 .35em 0;
+  margin: 0 0 .4em 0;
 }
 h2, .h2 {
-  font-family: 'Marcellus', serif;
-  font-weight: 400;
-  font-size: 1.35rem;
-  letter-spacing: .08em;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0;
   color: var(--ink);
   margin: 0 0 .5em 0;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 h3, .h3 {
-  font-family: 'Marcellus SC', serif;
-  font-weight: 400;
-  font-size: .9rem;
-  letter-spacing: .22em;
-  color: var(--ink-mute);
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
   margin: 0 0 .5em 0;
 }
 h4 {
-  font-family: 'Marcellus SC', serif;
-  font-weight: 400;
-  font-size: .75rem;
-  letter-spacing: .26em;
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: .85rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
   color: var(--ink-mute);
   margin: 0 0 .4em 0;
 }
 
 .subtitle {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Playfair Display', serif;
   font-style: italic;
+  font-weight: 400;
   color: var(--ink-mute);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
-p { margin: 0 0 .8em 0; }
+p { margin: 0 0 .7em 0; }
 
-/* ---------- Página ---------- */
+/* ---------- Página / Cartão ---------- */
 .page {
-  background: var(--ivory);
+  background: var(--paper);
   border-radius: var(--r);
-  padding: 38px 42px;
-  box-shadow:
-    0 24px 60px rgba(0,0,0,.55),
-    0 0 0 1px var(--gold-2),
-    inset 0 0 0 1px rgba(255,255,255,.4);
-  position: relative;
+  padding: 28px 32px;
+  border: 1px solid var(--paper-edge);
+  box-shadow: 0 1px 3px rgba(60,40,10,.05), 0 4px 16px rgba(60,40,10,.04);
 }
-/* Cantos art-déco (4 L's nas extremidades) */
-.page::before, .page::after {
-  content: "";
-  position: absolute;
-  width: 28px; height: 28px;
-  pointer-events: none;
-}
-.page::before { top: 12px; left: 12px; border-top: 1px solid var(--gold-2); border-left: 1px solid var(--gold-2); }
-.page::after  { bottom: 12px; right: 12px; border-bottom: 1px solid var(--gold-2); border-right: 1px solid var(--gold-2); }
 
 .card {
-  background: var(--ivory-soft);
-  border: 1px solid rgba(160,129,48,.3);
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
   border-radius: var(--r-sm);
-  padding: 18px 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  padding: 16px 18px;
 }
-
-/* Variante "noble" — card escuro com texto dourado/ivory */
-.card.noble, .page.noble {
-  background:
-    var(--gold-pinstripe),
-    linear-gradient(180deg, var(--black-3), var(--black-2));
-  color: var(--ivory);
-  border: 1px solid var(--gold-2);
-}
-.card.noble h2, .card.noble h3, .card.noble h4,
-.page.noble h2, .page.noble h3, .page.noble h4 { color: var(--gold-1); }
 
 .shell {
-  max-width: 1200px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 28px 18px 80px;
+  padding: 20px 16px 60px;
 }
 
-/* ---------- Topbar (carta timbrada) ---------- */
+/* ---------- Topbar (clean, não preto) ---------- */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 18px 32px 14px;
-  background:
-    var(--gold-pinstripe),
-    linear-gradient(180deg, var(--black-2) 0%, var(--black) 100%);
-  border-bottom: 1px solid var(--gold);
-  color: var(--ivory);
+  gap: 16px;
+  padding: 14px 24px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--paper-edge);
   flex-wrap: wrap;
-  position: relative;
-}
-/* Dupla linha dourada decorativa */
-.topbar::after {
-  content: "";
-  position: absolute; left: 0; right: 0; bottom: -6px;
-  height: 1px;
-  background: var(--gold-2);
-  opacity: .6;
 }
 .topbar .brand {
-  font-family: 'Italiana', serif;
-  font-size: 1.5rem;
-  font-weight: 400;
-  letter-spacing: .12em;
-  color: var(--gold-1);
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.005em;
   line-height: 1;
-  display: flex; flex-direction: column;
 }
-.topbar .brand::after {
-  content: "FAZENDA ROCKEFELLER · ANNO MCM";
-  font-family: 'Marcellus SC', serif;
-  font-size: .58rem;
-  letter-spacing: .42em;
-  color: var(--ink-faded);
-  margin-top: 4px;
-}
-.topbar nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.topbar nav { display: flex; gap: 2px; flex-wrap: wrap; }
 .topbar nav a {
-  color: rgba(243,236,220,.62);
-  font-family: 'Marcellus SC', serif;
-  font-size: .74rem;
-  letter-spacing: .22em;
-  padding: 8px 14px;
-  border-radius: 0;
-  border-bottom: 1px solid transparent;
-  transition: color .15s, border-color .15s;
+  color: var(--ink-mute);
+  font-family: 'Lora', serif;
+  font-size: .9rem;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  transition: color .15s, background .15s;
+  text-decoration: none;
 }
-.topbar nav a:hover { color: var(--gold-1); border-bottom-color: var(--gold); }
-.topbar nav a.active { color: var(--gold-1); border-bottom-color: var(--gold); }
+.topbar nav a:hover { color: var(--ink); background: rgba(176,141,61,.08); text-decoration: none; }
+.topbar nav a.active { color: var(--ink); background: rgba(176,141,61,.14); }
 .topbar .user {
-  display: flex; align-items: center; gap: 12px;
-  color: var(--ivory); font-size: .92rem;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--ink); font-size: .88rem;
 }
-.topbar .user .name {
-  color: var(--gold-1);
-  font-family: 'Marcellus', serif;
-  letter-spacing: .04em;
-}
+.topbar .user .name { font-weight: 500; }
 
 /* ---------- Botões ---------- */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: 'Marcellus SC', serif;
-  font-size: .78rem;
-  letter-spacing: .2em;
-  padding: 11px 22px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: 'Lora', serif;
+  font-size: .88rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  padding: 8px 16px;
   border-radius: var(--r-sm);
-  border: 1px solid var(--gold-2);
-  background: linear-gradient(180deg, var(--gold-1) 0%, var(--gold) 100%);
-  color: var(--ink);
+  border: 1px solid var(--gold-deep);
+  background: var(--gold);
+  color: #fff;
   cursor: pointer;
-  transition: transform .05s, filter .15s, box-shadow .15s;
-  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  transition: background .15s, transform .05s;
+  text-transform: none;
 }
-.btn:hover { filter: brightness(1.08); }
+.btn:hover { background: var(--gold-deep); }
 .btn:active { transform: translateY(1px); }
-.btn[disabled] { opacity: .4; cursor: not-allowed; filter: grayscale(.4); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
 .btn.ghost {
   background: transparent;
-  color: var(--gold-deep);
-  border-color: var(--gold-2);
-  box-shadow: none;
+  color: var(--ink);
+  border-color: var(--paper-edge);
 }
-.btn.ghost:hover { background: rgba(201,165,72,.1); }
+.btn.ghost:hover { background: rgba(176,141,61,.08); border-color: var(--gold-soft); }
 .btn.dark {
-  background: var(--black-2);
-  color: var(--gold-1);
-  border-color: var(--gold-2);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
-.btn.dark:hover { background: var(--black-3); filter: none; }
+.btn.dark:hover { background: var(--ink-soft); }
 .btn.danger {
-  background: linear-gradient(180deg, var(--burgundy-1), var(--burgundy));
-  color: var(--ivory);
+  background: var(--burgundy);
+  color: #fff;
   border-color: #5a160e;
 }
+.btn.danger:hover { background: #5a160e; }
 .btn.success {
-  background: linear-gradient(180deg, var(--olive-soft), var(--olive));
-  color: var(--ivory);
-  border-color: #2c3520;
+  background: var(--olive);
+  color: #fff;
+  border-color: #3d4a2a;
 }
-.btn.sm { padding: 7px 14px; font-size: .68rem; letter-spacing: .18em; }
-.btn.lg { padding: 14px 30px; font-size: .9rem; }
+.btn.success:hover { background: #3d4a2a; }
+.btn.sm { padding: 5px 11px; font-size: .8rem; }
+.btn.lg { padding: 11px 22px; font-size: .95rem; }
 
 /* ---------- Inputs ---------- */
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .field label {
-  font-family: 'Marcellus SC', serif;
-  font-size: .72rem;
-  letter-spacing: .24em;
-  color: var(--ink-mute);
+  font-family: 'Lora', serif;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
 }
 .field .hint {
-  font-size: .82rem;
+  font-size: .8rem;
   color: var(--ink-faded);
-  font-family: 'Cormorant Garamond', serif;
   font-style: italic;
 }
 
 input[type="text"], input[type="number"], input[type="datetime-local"],
 input[type="email"], input[type="password"], textarea, select {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.05rem;
+  font-family: 'Lora', serif;
+  font-size: .95rem;
   background: #fff;
-  border: 1px solid rgba(160,129,48,.4);
+  border: 1px solid var(--paper-edge);
   border-radius: var(--r-sm);
-  padding: 10px 14px;
+  padding: 8px 11px;
   color: var(--ink);
   outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-input:hover, textarea:hover, select:hover { border-color: var(--gold-2); }
+input:hover, textarea:hover, select:hover { border-color: var(--gold-soft); }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
-  border-color: var(--gold-deep);
-  box-shadow: 0 0 0 3px rgba(201,165,72,.18);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(176,141,61,.15);
 }
-textarea { min-height: 90px; resize: vertical; }
+textarea { min-height: 80px; resize: vertical; }
 select { cursor: pointer; }
 
 /* ---------- Tabelas ---------- */
 table.book {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.05rem;
+  font-family: 'Lora', serif;
+  font-size: .92rem;
 }
 table.book th, table.book td {
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(160,129,48,.22);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--paper-edge);
   text-align: left;
   vertical-align: middle;
 }
 table.book th {
-  font-family: 'Marcellus SC', serif;
-  font-size: .72rem;
-  letter-spacing: .22em;
-  color: var(--ink-mute);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--ink-soft);
   background: transparent;
-  border-bottom: 1px solid var(--gold-2);
-  font-weight: 400;
+  border-bottom: 2px solid var(--paper-edge);
 }
 table.book tbody tr { transition: background .12s; }
-table.book tbody tr:hover { background: rgba(201,165,72,.06); }
+table.book tbody tr:hover { background: rgba(176,141,61,.04); }
 table.book .num, .num {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Lora', serif;
   font-weight: 500;
   text-align: right;
   font-variant-numeric: tabular-nums;
-  font-size: 1.1rem;
 }
 
 /* ---------- Badges ---------- */
 .badge {
   display: inline-block;
-  font-family: 'Marcellus SC', serif;
-  font-size: .68rem;
-  letter-spacing: .22em;
-  padding: 5px 11px;
-  border-radius: var(--r-sm);
+  font-family: 'Lora', serif;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
   border: 1px solid transparent;
-  font-weight: 400;
+  line-height: 1.5;
 }
-.badge.rascunho    { background: var(--ivory-warm); color: var(--ink-soft); border-color: #c8b07c; }
+.badge.rascunho    { background: #ece3c8; color: #6b5a26; border-color: #c9b878; }
 .badge.aprovado    { background: #dde6c8; color: var(--olive); border-color: var(--olive-soft); }
-.badge.em_producao { background: #f2dfa0; color: var(--gold-deep); border-color: var(--gold-2); }
+.badge.em_producao { background: #f0deaa; color: var(--gold-deep); border-color: var(--gold-soft); }
 .badge.entregue    { background: #cfddbe; color: var(--olive); border-color: var(--olive-soft); }
-.badge.pago        { background: var(--olive); color: var(--ivory); border-color: var(--olive); }
-.badge.concluido   { background: var(--black); color: var(--gold-1); border-color: var(--gold-2); }
-.badge.cancelado   { background: #eccfcb; color: var(--burgundy); border-color: var(--burgundy-1); }
-.badge.proprietario{ background: var(--black); color: var(--gold-1); border-color: var(--gold); }
-.badge.gerente     { background: var(--gold); color: var(--ink); border-color: var(--gold-deep); }
-.badge.trabalhador { background: var(--ivory-warm); color: var(--ink); border-color: var(--gold-2); }
+.badge.pago        { background: var(--olive); color: #fff; border-color: var(--olive); }
+.badge.concluido   { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.badge.cancelado   { background: #eccfcb; color: var(--burgundy); border-color: #c47668; }
+.badge.proprietario{ background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.badge.gerente     { background: var(--gold); color: #fff; border-color: var(--gold-deep); }
+.badge.trabalhador { background: var(--paper-edge); color: var(--ink); border-color: var(--gold-soft); }
 
-/* ---------- Selo decorativo (cartão de visita) ---------- */
+/* ---------- Selo ---------- */
 .seal {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 8px 18px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px;
   border: 1px solid var(--burgundy);
   color: var(--burgundy);
-  font-family: 'Marcellus SC', serif;
-  font-size: .74rem;
-  letter-spacing: .26em;
-  background: transparent;
-  position: relative;
-}
-.seal::before, .seal::after {
-  content: "";
-  position: absolute; top: -4px; bottom: -4px;
-  width: 8px;
-  border-top: 1px solid var(--burgundy);
-  border-bottom: 1px solid var(--burgundy);
-}
-.seal::before { left: -4px; border-left: 1px solid var(--burgundy); }
-.seal::after  { right: -4px; border-right: 1px solid var(--burgundy); }
-
-/* ---------- Divider art-déco (raios) ---------- */
-.divider {
-  position: relative;
-  height: 24px;
-  margin: 28px 0;
-  background:
-    linear-gradient(90deg, transparent 0%, var(--gold-2) 40%, var(--gold-2) 60%, transparent 100%) center/100% 1px no-repeat;
-  display: flex; align-items: center; justify-content: center;
-}
-.divider::before {
-  content: "";
-  width: 14px; height: 14px;
-  background: var(--ivory);
-  border: 1px solid var(--gold-2);
-  transform: rotate(45deg);
-}
-.divider::after {
-  content: "";
-  position: absolute;
-  width: 6px; height: 6px;
-  background: var(--gold);
-  transform: rotate(45deg);
-}
-
-/* ---------- KPIs ---------- */
-.stat {
-  background: var(--ivory-soft);
-  border: 1px solid rgba(160,129,48,.28);
+  font-family: 'Playfair Display', serif;
+  font-size: .82rem;
+  font-weight: 600;
+  font-style: italic;
   border-radius: var(--r-sm);
-  padding: 18px 20px;
-  position: relative;
+  background: transparent;
+}
+
+/* ---------- Divider simples ---------- */
+.divider {
+  height: 1px;
+  background: var(--paper-edge);
+  margin: 20px 0;
+  border: none;
+}
+
+/* ---------- KPIs / Stats ---------- */
+.stat {
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
 }
 .stat .label {
-  font-family: 'Marcellus SC', serif;
-  font-size: .7rem;
-  letter-spacing: .22em;
+  font-family: 'Lora', serif;
+  font-size: .78rem;
+  font-weight: 600;
   color: var(--ink-mute);
 }
 .stat .value {
-  font-family: 'Italiana', serif;
-  font-size: 2.4rem;
-  font-weight: 400;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--ink);
-  margin-top: 8px;
-  letter-spacing: .02em;
-  line-height: 1;
+  margin-top: 4px;
+  line-height: 1.1;
 }
 .stat .hint {
-  font-size: .85rem;
+  font-size: .78rem;
   color: var(--ink-faded);
-  margin-top: 6px;
+  margin-top: 4px;
   font-style: italic;
 }
 .stat.accent {
-  background:
-    var(--gold-pinstripe),
-    linear-gradient(180deg, var(--black-3), var(--black));
-  border-color: var(--gold);
-  color: var(--ivory);
+  background: #fff;
+  border-color: var(--gold-soft);
 }
-.stat.accent .label { color: var(--gold-1); }
-.stat.accent .value { color: var(--gold-1); }
-.stat.accent .hint  { color: rgba(243,236,220,.55); }
+.stat.accent .value { color: var(--gold-deep); }
 
 /* ---------- Helpers ---------- */
-.row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
 .row > * { flex: 1 1 280px; min-width: 0; }
 .muted { color: var(--ink-mute); }
 .muted.it { font-style: italic; }
-.small { font-size: .9rem; }
+.small { font-size: .85rem; }
 .right { text-align: right; }
 .center { text-align: center; }
-.mt-0 { margin-top: 0; } .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 18px; }
-.mt-3 { margin-top: 28px; } .mt-4 { margin-top: 40px; }
+.mt-0 { margin-top: 0; } .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; } .mt-4 { margin-top: 32px; }
 .gap-1 { gap: 8px; } .gap-2 { gap: 16px; }
 .flex { display: flex; }
 .between { justify-content: space-between; }
 .center-y { align-items: center; }
 .wrap { flex-wrap: wrap; }
-.stack > * + * { margin-top: 14px; }
-.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.stack > * + * { margin-top: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 
 /* ---------- Login ---------- */
 .login-wrap {
   min-height: 100vh;
   display: grid; place-items: center;
   padding: 24px;
+  background: var(--bg);
 }
 .login-card {
-  max-width: 500px; width: 100%;
+  max-width: 460px; width: 100%;
   text-align: center;
-  padding: 50px 42px;
+  padding: 36px 32px;
 }
-.login-card h1 { font-size: 2.4rem; }
+.login-card h1 { font-size: 1.8rem; }
 .login-card .ornament {
-  font-family: 'Marcellus SC', serif;
-  font-size: .85rem;
-  color: var(--gold-deep);
-  letter-spacing: .32em;
-  margin: 12px 0 8px;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-mute);
+  margin: 8px 0 6px;
 }
 
 /* ---------- Combobox ---------- */
@@ -483,67 +386,67 @@ table.book .num, .num {
 .combo-list {
   position: absolute; top: 100%; left: 0; right: 0;
   background: #fff;
-  border: 1px solid var(--gold-2);
+  border: 1px solid var(--gold-soft);
   border-radius: var(--r-sm);
-  max-height: 300px;
+  max-height: 280px;
   overflow: auto;
   z-index: 10;
-  box-shadow: 0 14px 36px rgba(0,0,0,.3);
+  box-shadow: 0 8px 22px rgba(60,40,10,.12);
   margin-top: 4px;
 }
 .combo-list .group-label {
-  font-family: 'Marcellus SC', serif;
-  font-size: .68rem;
-  letter-spacing: .24em;
-  color: var(--ink-mute);
-  padding: 9px 14px 5px;
+  font-family: 'Lora', serif;
+  font-size: .76rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 8px 12px 4px;
   position: sticky; top: 0;
-  background: var(--ivory-warm);
-  border-bottom: 1px solid rgba(160,129,48,.25);
+  background: var(--paper-soft);
+  border-bottom: 1px solid var(--paper-edge);
 }
 .combo-list .opt {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; cursor: pointer;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.05rem;
-  border-bottom: 1px solid rgba(160,129,48,.08);
+  padding: 8px 12px; cursor: pointer;
+  font-family: 'Lora', serif;
+  font-size: .94rem;
+  border-bottom: 1px solid rgba(176,141,61,.08);
 }
 .combo-list .opt:last-child { border-bottom: none; }
-.combo-list .opt:hover, .combo-list .opt.active { background: rgba(201,165,72,.14); }
+.combo-list .opt:hover, .combo-list .opt.active { background: rgba(176,141,61,.1); }
 .combo-list .opt .price {
-  color: var(--ink-mute); font-size: .9rem;
-  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  color: var(--ink-mute); font-size: .82rem; font-style: italic;
 }
 
 /* ---------- Status Timeline ---------- */
 .timeline {
   display: flex; align-items: flex-start; gap: 0;
-  padding: 18px 8px 8px;
+  padding: 10px 4px 4px;
   overflow-x: auto;
 }
 .timeline .step {
-  flex: 1 1 0; min-width: 110px;
+  flex: 1 1 0; min-width: 100px;
   display: flex; flex-direction: column; align-items: center;
   position: relative; text-align: center;
 }
 .timeline .step + .step::before {
   content: "";
-  position: absolute; top: 16px;
+  position: absolute; top: 14px;
   left: -50%; right: 50%;
-  height: 1px;
-  background: rgba(160,129,48,.3);
+  height: 2px;
+  background: var(--paper-edge);
   z-index: 0;
 }
 .timeline .step.done + .step::before,
 .timeline .step.current + .step::before { background: var(--gold); }
 .timeline .dot {
-  width: 32px; height: 32px;
+  width: 28px; height: 28px;
   border-radius: 50%;
-  background: var(--ivory);
-  border: 1px solid rgba(160,129,48,.45);
+  background: #fff;
+  border: 2px solid var(--paper-edge);
   display: grid; place-items: center;
-  font-family: 'Italiana', serif;
-  font-size: .92rem;
+  font-family: 'Lora', serif;
+  font-size: .82rem;
+  font-weight: 600;
   color: var(--ink-faded);
   z-index: 1;
   position: relative;
@@ -551,66 +454,61 @@ table.book .num, .num {
 .timeline .step.done .dot {
   background: var(--olive);
   border-color: var(--olive);
-  color: var(--ivory);
+  color: #fff;
 }
 .timeline .step.current .dot {
-  background: var(--black);
-  border-color: var(--gold);
-  color: var(--gold-1);
-  box-shadow: 0 0 0 4px rgba(201,165,72,.2);
+  background: var(--gold);
+  border-color: var(--gold-deep);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(176,141,61,.18);
 }
 .timeline .step.cancelado .dot {
   background: var(--burgundy);
   border-color: var(--burgundy);
-  color: var(--ivory);
+  color: #fff;
 }
 .timeline .label {
-  font-family: 'Marcellus SC', serif;
-  font-size: .68rem;
-  letter-spacing: .2em;
+  font-family: 'Lora', serif;
+  font-size: .82rem;
+  font-weight: 600;
   color: var(--ink-mute);
-  margin-top: 10px;
+  margin-top: 8px;
   line-height: 1.25;
 }
 .timeline .step.done .label,
 .timeline .step.current .label { color: var(--ink); }
 .timeline .when {
-  font-size: .78rem;
+  font-size: .75rem;
   color: var(--ink-faded);
   font-style: italic;
-  margin-top: 3px;
-  font-family: 'Cormorant Garamond', serif;
+  margin-top: 2px;
 }
 
 /* ---------- Toast ---------- */
 .toast {
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  background: var(--black);
-  color: var(--gold-1);
-  padding: 14px 26px;
-  border: 1px solid var(--gold-2);
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 11px 20px;
   border-radius: var(--r-sm);
-  box-shadow: 0 10px 30px rgba(0,0,0,.5);
-  font-family: 'Marcellus SC', serif;
-  font-size: .78rem;
-  letter-spacing: .2em;
+  box-shadow: 0 6px 22px rgba(0,0,0,.2);
+  font-family: 'Lora', serif;
+  font-size: .9rem;
   z-index: 1000;
 }
-.toast.error { background: var(--burgundy); color: var(--ivory); border-color: #5a160e; }
+.toast.error { background: var(--burgundy); color: #fff; }
 
 /* ---------- Responsivo ---------- */
 @media (max-width: 720px) {
-  body { font-size: 15.5px; }
-  .topbar { padding: 14px 18px 10px; gap: 12px; }
-  .topbar .brand { font-size: 1.15rem; }
-  .topbar .brand::after { font-size: .5rem; letter-spacing: .3em; }
-  .topbar nav a { padding: 6px 10px; font-size: .65rem; letter-spacing: .18em; }
-  .shell { padding: 16px 10px 50px; }
-  .page { padding: 26px 20px; }
-  .page::before, .page::after { width: 20px; height: 20px; }
-  h1 { font-size: 1.9rem; }
-  h2 { font-size: 1.15rem; }
-  table.book { font-size: .98rem; }
-  table.book th, table.book td { padding: 9px 7px; }
-  .stat .value { font-size: 1.8rem; }
+  body { font-size: 14.5px; }
+  .topbar { padding: 12px 14px; gap: 10px; }
+  .topbar .brand { font-size: 1rem; }
+  .topbar nav a { padding: 6px 9px; font-size: .85rem; }
+  .shell { padding: 14px 10px 50px; }
+  .page { padding: 20px 16px; }
+  h1 { font-size: 1.45rem; }
+  h2 { font-size: 1.08rem; }
+  table.book { font-size: .88rem; }
+  table.book th, table.book td { padding: 7px 6px; }
+  .stat .value { font-size: 1.3rem; }
 }
