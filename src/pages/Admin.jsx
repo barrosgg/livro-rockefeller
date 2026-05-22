@@ -36,9 +36,9 @@ function UsuariosTab() {
   useEffect(() => { carregar(); }, []);
 
   const salvarEdit = async () => {
-    const { id, nome_completo, identificacao, discord_handle, conta_bancaria } = editing;
+    const { id, nome_completo, identificacao, discord_handle, conta_bancaria, correio } = editing;
     const { error } = await supabase.from('profiles')
-      .update({ nome_completo, identificacao, discord_handle, conta_bancaria })
+      .update({ nome_completo, identificacao, discord_handle, conta_bancaria, correio: correio || null })
       .eq('id', id);
     if (error) { alert(error.message); return; }
     setEditing(null);
@@ -67,7 +67,7 @@ function UsuariosTab() {
       <table className="book mt-2">
         <thead>
           <tr>
-            <th>Nome</th><th>Discord</th><th>Identif.</th><th>Conta</th>
+            <th>Nome</th><th>Discord</th><th>Identif.</th><th>Conta</th><th>Correio</th>
             <th style={{ width: 140 }}>Papel</th>
             <th style={{ width: 110 }}>Status</th>
             <th style={{ width: 140 }}></th>
@@ -85,6 +85,7 @@ function UsuariosTab() {
               <td>{p.discord_handle || <span className="muted">—</span>}</td>
               <td>{p.identificacao || <span className="muted">—</span>}</td>
               <td>{p.conta_bancaria || <span className="muted">—</span>}</td>
+              <td>{p.correio || <span className="muted">—</span>}</td>
               <td>
                 <select value={p.role} onChange={e => mudarRole(p.id, e.target.value)}>
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
@@ -131,6 +132,11 @@ function UsuariosTab() {
               <label>Conta bancária</label>
               <input type="text" value={editing.conta_bancaria || ''}
                 onChange={e => setEditing({ ...editing, conta_bancaria: e.target.value })} />
+            </div>
+            <div className="field" style={{ flex: '1 1 200px' }}>
+              <label>Correio</label>
+              <input type="text" value={editing.correio || ''}
+                onChange={e => setEditing({ ...editing, correio: e.target.value })} />
             </div>
           </div>
           <div className="flex gap-1 mt-1">

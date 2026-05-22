@@ -1,12 +1,29 @@
 import { useState } from 'react';
-import { avatarUrl, colorFor } from '../lib/avatars.js';
 
-/** Avatar circular. Se a imagem não carregar, exibe iniciais sobre círculo colorido. */
+const COLORS = [
+  '#7a3a2a', '#5e5a2a', '#3a5e2a', '#2a5e5a', '#2a3a5e', '#5a2a5e',
+  '#7a5a2a', '#2a7a3a', '#7a2a4a', '#4a2a7a', '#2a4a7a', '#7a3a5a',
+];
+function colorFor(seed = '') {
+  const code = String(seed).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return COLORS[code % COLORS.length];
+}
+
+/** Avatar circular.
+ *  - `slug` aceita uma URL completa (http://... ou https://...) OU um identificador.
+ *  - Se for URL → usa direto. Se for identificador local → tenta /avatars/<id>.png.
+ *  - Se a imagem falhar (404, broken link, vazio) → mostra inicial sobre círculo colorido.
+ */
 export default function Avatar({ slug, name, size = 36, title }) {
   const [failed, setFailed] = useState(false);
   const initial = (name || slug || '?').trim()[0]?.toUpperCase() || '?';
-  const url = avatarUrl(slug);
   const tooltip = title || name || slug;
+
+  let url = null;
+  if (slug) {
+    if (/^https?:\/\//i.test(slug)) url = slug;          // URL completa
+    else url = `/avatars/${slug}.png`;                   // identificador local (legado)
+  }
 
   if (!url || failed) {
     return (
@@ -39,6 +56,7 @@ export default function Avatar({ slug, name, size = 36, title }) {
       width={size}
       height={size}
       onError={() => setFailed(true)}
+      referrerPolicy="no-referrer"
       style={{
         width: size, height: size,
         borderRadius: '50%',

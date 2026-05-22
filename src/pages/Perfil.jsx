@@ -3,17 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth, isProfileComplete } from '../lib/auth.jsx';
 import { supabase } from '../lib/supabase.js';
 import Avatar from '../components/Avatar.jsx';
-import AvatarPicker from '../components/AvatarPicker.jsx';
 
 export default function Perfil() {
   const { profile, refreshProfile, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    nome_completo: '', identificacao: '', discord_handle: '', conta_bancaria: '', avatar: null,
+    nome_completo: '',
+    identificacao: '',
+    discord_handle: '',
+    conta_bancaria: '',
+    correio: '',
+    avatar: '',
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -22,7 +25,8 @@ export default function Perfil() {
         identificacao: profile.identificacao || '',
         discord_handle: profile.discord_handle || '',
         conta_bancaria: profile.conta_bancaria || '',
-        avatar: profile.avatar || null,
+        correio: profile.correio || '',
+        avatar: profile.avatar || '',
       });
     }
   }, [profile]);
@@ -32,7 +36,15 @@ export default function Perfil() {
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true); setMsg(null);
-    const { error } = await supabase.from('profiles').update(form).eq('id', user.id).select().single();
+    const payload = {
+      nome_completo: form.nome_completo,
+      identificacao: form.identificacao,
+      discord_handle: form.discord_handle,
+      conta_bancaria: form.conta_bancaria,
+      correio: form.correio || null,
+      avatar: form.avatar?.trim() || null,
+    };
+    const { error } = await supabase.from('profiles').update(payload).eq('id', user.id).select().single();
     setSaving(false);
     if (error) { setMsg({ type: 'err', text: error.message }); return; }
     setMsg({ type: 'ok', text: 'Perfil salvo.' });
@@ -52,31 +64,28 @@ export default function Perfil() {
       <hr className="divider" />
 
       <form onSubmit={submit}>
-        {/* Avatar */}
-        <div className="flex gap-2 center-y" style={{ marginBottom: 18 }}>
+        {/* Avatar — preview + input URL */}
+        <div className="flex gap-2 center-y" style={{ marginBottom: 22 }}>
           <Avatar slug={form.avatar} name={form.nome_completo} size={72} />
-          <div>
-            <div className="muted small" style={{ fontWeight: 600, letterSpacing: 0 }}>SEU PERSONAGEM</div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem' }}>
-              {form.avatar
-                ? <em>{(form.avatar.charAt(0).toUpperCase() + form.avatar.slice(1)).replace('-', ' ')}</em>
-                : <span className="muted it">Nenhum selecionado</span>}
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <label style={{
+              fontFamily: "'Lora', serif", fontSize: '.8rem', fontWeight: 600,
+              color: 'var(--ink-soft)', display: 'block', marginBottom: 5,
+            }}>
+              Avatar (URL da imagem)
+            </label>
+            <input
+              type="url"
+              placeholder="https://i.imgur.com/seuavatar.png (opcional)"
+              value={form.avatar}
+              onChange={set('avatar')}
+              style={{ width: '100%' }}
+            />
+            <div className="hint" style={{ marginTop: 4 }}>
+              Cole o link direto de uma imagem. Sem link, mostramos as suas iniciais.
             </div>
-            <button type="button" className="btn ghost sm" style={{ marginTop: 6 }}
-              onClick={() => setPickerOpen(o => !o)}>
-              {pickerOpen ? 'Fechar' : (form.avatar ? 'Trocar avatar' : 'Escolher avatar')}
-            </button>
           </div>
         </div>
-
-        {pickerOpen && (
-          <div className="card" style={{ marginBottom: 18 }}>
-            <AvatarPicker value={form.avatar} onChange={(slug) => {
-              setForm(f => ({ ...f, avatar: slug }));
-              setPickerOpen(false);
-            }} />
-          </div>
-        )}
 
         <div className="row">
           <div style={{ minWidth: 300, flex: 1 }}>
@@ -86,23 +95,35 @@ export default function Perfil() {
             </div>
             <div className="field">
               <label>Identificação</label>
-              <input type="text" required value={form.identificacao} onChange={set('identificacao')} placeholder="RG / passaporte / ID do personagem" />
+              <input type="text" required value={form.identificacao} onChange={set('identificacao')}
+                placeholder="RG / passaporte / ID do personagem" />
+            </div>
+            <div className="field">
+              <label>Correio (PO Box)</label>
+              <input type="text" value={form.correio} onChange={set('correio')}
+                placeholder="Endereço de correio do personagem" />
             </div>
           </div>
           <div style={{ minWidth: 300, flex: 1 }}>
             <div className="field">
               <label>Handle do Discord</label>
-              <input type="text" required value={form.discord_handle} onChange={set('discord_handle')} placeholder="usuario#0000 ou @usuario" />
+              <input type="text" required value={form.discord_handle} onChange={set('discord_handle')}
+                placeholder="usuario#0000 ou @usuario" />
             </div>
             <div className="field">
               <label>Conta bancária</label>
-              <input type="text" required value={form.conta_bancaria} onChange={set('conta_bancaria')} placeholder="Número da conta para pagamento" />
+              <input type="text" required value={form.conta_bancaria} onChange={set('conta_bancaria')}
+                placeholder="Número da conta para pagamento" />
             </div>
           </div>
         </div>
         <div className="mt-2">
           <button className="btn" disabled={saving}>{saving ? 'Salvando…' : 'Salvar Perfil'}</button>
-          {msg && <span className="muted" style={{ marginLeft: 12, color: msg.type === 'err' ? 'var(--burgundy)' : 'inherit' }}>{msg.text}</span>}
+          {msg && (
+            <span className="muted" style={{
+              marginLeft: 12, color: msg.type === 'err' ? 'var(--burgundy)' : 'inherit',
+            }}>{msg.text}</span>
+          )}
         </div>
       </form>
     </div>
