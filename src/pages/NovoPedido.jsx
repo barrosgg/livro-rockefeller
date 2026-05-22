@@ -106,7 +106,8 @@ export default function NovoPedido() {
     const p = produto || selProd;
     const q = quantidade || qtd;
     if (!p || q <= 0) return false;
-    const preco_unit = Number(((p.preco_min + p.preco_max) / 2).toFixed(2));
+    // Default = preço máximo (margem total, melhor remuneração)
+    const preco_unit = Number(p.preco_max);
     setItens((arr) => {
       const idx = arr.findIndex(i => i.product.id === p.id);
       if (idx >= 0) {
@@ -288,7 +289,7 @@ export default function NovoPedido() {
           <div className="field" style={{ flex: '0 0 110px', marginBottom: 0 }}>
             <label>Quantidade</label>
             <input ref={qtdRef} type="number" min="1" value={qtd}
-              style={{ textAlign: 'right' }}
+              style={{ textAlign: 'center' }}
               onChange={(e) => setQtd(Number(e.target.value) || 0)}
               onKeyDown={onQtdKey} />
           </div>
