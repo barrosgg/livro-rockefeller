@@ -75,9 +75,9 @@ export default function Contrato({ profile, onAssinar }) {
         <p>
           Os serviços serão distribuídos por meio do <em>Caderno da Fazenda Rockefeller</em>,
           registro oficial de orçamentos, pedidos e produção. A remuneração será calculada
-          conforme a tabela de preços vigente para cada item, descontada a comissão da Fazenda
-          definida em sistema. Os pagamentos serão efetuados em conta bancária após confirmação
-          da entrega no baú.
+          conforme a tabela de preços vigente para cada item, descontada a comissão da Fazenda.
+          Os pagamentos serão efetuados em conta bancária ou em espécie na Fazenda após
+          confirmação da entrega no baú.
         </p>
 
         <h3>Cláusula Terceira — Das Regras da Fazenda</h3>
