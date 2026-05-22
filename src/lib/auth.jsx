@@ -10,23 +10,38 @@ export function AuthProvider({ children }) {
 
   const loadProfile = useCallback(async (userId) => {
     if (!userId) { setProfile(null); return; }
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-    if (error) console.error(error);
-    setProfile(data ?? null);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) {
+        console.error('loadProfile error:', error);
+        setProfile(null);
+        return;
+      }
+      setProfile(data ?? null);
+    } catch (e) {
+      console.error('loadProfile exception:', e);
+      setProfile(null);
+    }
   }, []);
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!mounted) return;
-      setSession(data.session);
-      await loadProfile(data.session?.user?.id);
-      setLoading(false);
-    });
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(data.session);
+        await loadProfile(data.session?.user?.id);
+      } catch (e) {
+        console.error('getSession error:', e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, sess) => {
       setSession(sess);
       await loadProfile(sess?.user?.id);
