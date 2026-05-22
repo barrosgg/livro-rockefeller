@@ -1,0 +1,104 @@
+/* =====================================================================
+   Onboarding — wizard de boas-vindas
+   ===================================================================== */
+
+.onboarding-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(8,7,6,.6);
+  display: grid; place-items: center;
+  z-index: 1800;
+  padding: 16px;
+  animation: fadeIn 220ms ease-out;
+  backdrop-filter: blur(4px);
+}
+
+.onboarding-modal {
+  background: var(--paper);
+  border: 1px solid var(--gold);
+  border-radius: var(--r);
+  padding: 32px 36px 24px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  animation: scaleIn 280ms cubic-bezier(.2,.7,.2,1);
+  position: relative;
+}
+
+/* Progresso (dots) */
+.onboarding-progress {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.onboarding-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--paper-edge);
+  transition: background .2s, transform .2s;
+}
+.onboarding-dot.done { background: var(--olive); }
+.onboarding-dot.active { background: var(--gold); transform: scale(1.4); }
+
+.onboarding-titulo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 16px;
+  text-align: center;
+  letter-spacing: -.005em;
+}
+
+.onboarding-conteudo {
+  font-family: 'Lora', serif;
+  color: var(--ink-soft);
+  font-size: .98rem;
+  line-height: 1.65;
+  min-height: 200px;
+}
+.onboarding-conteudo p { margin: 0 0 12px; }
+.onboarding-conteudo strong { color: var(--ink); }
+.onboarding-conteudo em { color: var(--gold-deep); font-style: italic; }
+
+.onboarding-passos {
+  padding-left: 22px;
+  margin: 12px 0;
+}
+.onboarding-passos li {
+  margin-bottom: 8px;
+}
+
+.onboarding-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.onboarding-checklist li {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--r-sm);
+  font-size: .92rem;
+}
+
+.onboarding-acoes {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--paper-edge);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 540px) {
+  .onboarding-modal { padding: 24px 22px 20px; }
+  .onboarding-titulo { font-size: 1.2rem; }
+  .onboarding-conteudo { font-size: .92rem; min-height: 160px; }
+  .onboarding-acoes { flex-direction: column-reverse; align-items: stretch; }
+  .onboarding-acoes > div { width: 100%; justify-content: stretch; }
+  .onboarding-acoes button { flex: 1; }
+}

@@ -460,6 +460,38 @@ table.book td.num input:focus-visible {
   object-fit: cover;
 }
 
+/* ---------- Página Ajuda ---------- */
+.ajuda-passos {
+  padding-left: 22px;
+  margin: 12px 0 18px;
+}
+.ajuda-passos li {
+  margin-bottom: 10px;
+  line-height: 1.55;
+}
+.ajuda-passos li strong {
+  color: var(--gold-deep);
+}
+.ajuda-regras {
+  padding-left: 22px;
+  margin: 8px 0 16px;
+}
+.ajuda-regras li {
+  margin-bottom: 6px;
+  line-height: 1.55;
+}
+kbd {
+  font-family: 'Lora', serif;
+  font-size: .82rem;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid var(--paper-edge);
+  background: #fff;
+  color: var(--ink-soft);
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+  margin: 0 2px;
+}
+
 /* ---------- Empty state ---------- */
 .empty-state {
   text-align: center;

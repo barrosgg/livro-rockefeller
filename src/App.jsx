@@ -8,10 +8,13 @@ import NovoPedido from './pages/NovoPedido.jsx';
 import PedidoDetalhe from './pages/PedidoDetalhe.jsx';
 import MeusTrabalhos from './pages/MeusTrabalhos.jsx';
 import Admin from './pages/Admin.jsx';
+import Ajuda from './pages/Ajuda.jsx';
 import PedidoPublico from './pages/PedidoPublico.jsx';
 import CredencialPublica from './pages/CredencialPublica.jsx';
 import ReciboPublico from './pages/ReciboPublico.jsx';
 import Avatar from './components/Avatar.jsx';
+import Onboarding from './components/Onboarding.jsx';
+import './styles/onboarding.css';
 
 function Topbar() {
   const { profile, signOut } = useAuth();
@@ -46,7 +49,8 @@ function Topbar() {
         {isManager && <NavLink to="/novo" className={({isActive}) => isActive ? 'active' : ''}>Novo Pedido</NavLink>}
         <NavLink to="/meus" className={({isActive}) => isActive ? 'active' : ''}>Meus Trabalhos</NavLink>
         <NavLink to="/perfil" className={({isActive}) => isActive ? 'active' : ''}>Perfil</NavLink>
-        {profile?.role === 'proprietario' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin</NavLink>}
+        <NavLink to="/ajuda" className={({isActive}) => isActive ? 'active' : ''}>Ajuda</NavLink>
+        {profile?.role === 'proprietario' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Administração</NavLink>}
       </nav>
 
       <div className="user">
@@ -60,10 +64,21 @@ function Topbar() {
 }
 
 function Layout() {
+  const { profile, refreshProfile } = useAuth();
+  const completo = isProfileComplete(profile);
+  const jaViu = !!profile?.onboarding_completed_em;
+  const mostrarOnboarding = completo && !jaViu && !profile?.disabled;
+
   return (
     <>
       <Topbar />
       <main className="shell"><Outlet /></main>
+      {mostrarOnboarding && (
+        <Onboarding
+          profile={profile}
+          onClose={() => refreshProfile?.()}
+        />
+      )}
     </>
   );
 }
@@ -109,6 +124,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/pedidos" replace />} />
         <Route path="/perfil"       element={<Protected><Perfil /></Protected>} />
+        <Route path="/ajuda"        element={<Protected><Ajuda /></Protected>} />
         <Route path="/pedidos"      element={<Protected><Pedidos /></Protected>} />
         <Route path="/pedidos/:id"  element={<Protected><PedidoDetalhe /></Protected>} />
         <Route path="/novo"         element={<Protected allow={['gerente','proprietario']}><NovoPedido /></Protected>} />
