@@ -400,6 +400,49 @@ table.book td.num input:focus-visible {
 .stack > * + * { margin-top: 12px; }
 .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 
+/* ---------- Form sections (Perfil edit) ---------- */
+.form-section {
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--r-sm);
+  padding: 18px 22px 8px;
+  margin-bottom: 16px;
+}
+.form-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--paper-edge);
+}
+.form-avatar-row {
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 6px;
+}
+.form-avatar-frame {
+  width: 100px; height: 100px;
+  border: 2px solid var(--gold-deep);
+  padding: 3px;
+  background: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.form-avatar-frame > img,
+.form-avatar-frame > span {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 3rem !important;
+  object-fit: cover;
+}
+
 /* ---------- Login ---------- */
 .login-wrap {
   min-height: 100vh;

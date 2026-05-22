@@ -167,15 +167,16 @@
   bottom: -8px; right: -8px;
   background: var(--burgundy);
   color: var(--paper);
-  font-family: 'Playfair Display', serif;
+  font-family: 'Lora', Georgia, serif;
   font-weight: 700;
-  font-size: .68rem;
-  letter-spacing: .12em;
-  padding: 2px 8px;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  padding: 2px 9px;
   border-radius: 2px;
   border: 1px solid #5a160e;
   transform: rotate(-3deg);
   z-index: 2;
+  font-variant-numeric: tabular-nums;
 }
 /* Avatar dentro do frame: vira quadrado, preenche tudo, sem borda nem círculo */
 .credencial-avatar-frame > img,
@@ -329,6 +330,13 @@
   letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--ink);
+}
+.credencial-contrato-ok {
+  margin-top: 8px;
+  font-family: 'Lora', serif;
+  font-size: .72rem;
+  font-style: italic;
+  color: var(--olive);
 }
 
 /* Mobile */

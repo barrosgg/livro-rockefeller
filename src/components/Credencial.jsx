@@ -82,6 +82,11 @@ export default function Credencial({ profile }) {
           <div className="credencial-assinatura-nome">{profile?.nome_completo || '—'}</div>
           <div className="credencial-assinatura-linha" />
           <div className="credencial-assinatura-label">{profile?.nome_completo || '—'}</div>
+          {profile?.contrato_assinado_em && (
+            <div className="credencial-contrato-ok">
+              ✓ Contrato firmado em {formatarData(profile.contrato_assinado_em)}
+            </div>
+          )}
         </div>
 
         <div className="credencial-selo" title="Família Rockefeller · Registro Oficial">
