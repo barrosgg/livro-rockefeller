@@ -407,7 +407,7 @@ export default function PedidoDetalhe() {
                     <div>
                       <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
                       <div className="muted small">
-                        ID {c.trabalhador?.identificacao} · Discord {c.trabalhador?.discord_handle} · Conta {c.trabalhador?.conta_bancaria}
+                        ID {c.trabalhador?.identificacao} · Conta {c.trabalhador?.conta_bancaria}
                       </div>
                     </div>
                   </div>
