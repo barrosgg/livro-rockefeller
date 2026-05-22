@@ -120,6 +120,15 @@ p { margin: 0 0 .7em 0; }
   .shell { max-width: 1180px; }
 }
 
+/* Quando o <main> recebe foco via ScrollToTop, nao mostra outline */
+main.shell:focus,
+main.shell:focus-visible {
+  outline: none;
+}
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* ---------- Skip link (a11y) ---------- */
 .skip-link {
   position: absolute;
