@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLocalStorage } from '../lib/storage.js';
-import { fmt, totalPedido, statusLabel, TRABALHADOR_PCT, COMISSAO_PCT } from '../lib/calc.js';
+import { useCommissionPct, useWorkerPct } from '../lib/settings.jsx';
+import { fmt, totalPedido, statusLabel } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
 
 function Toast({ message, type='ok', onClose }) {
@@ -22,6 +23,8 @@ const isUuid = (s) => typeof s === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f
 export default function PedidoDetalhe() {
   const { id: param } = useParams();
   const { profile, user } = useAuth();
+  const COMISSAO_PCT = useCommissionPct();
+  const TRABALHADOR_PCT = useWorkerPct();
 
   const [pedido, setPedido] = useState(null);
   const [itens, setItens] = useState([]);

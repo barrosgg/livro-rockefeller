@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
-import { fmt, statusLabel, TRABALHADOR_PCT } from '../lib/calc.js';
+import { useWorkerPct } from '../lib/settings.jsx';
+import { fmt, statusLabel } from '../lib/calc.js';
 
 export default function MeusTrabalhos() {
   const { user } = useAuth();
+  const TRABALHADOR_PCT = useWorkerPct();
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ export default function MeusTrabalhos() {
       {claims.length === 0 ? <p className="muted">Você ainda não assumiu nenhuma produção.</p> : (
         <table className="book">
           <thead>
-            <tr><th>Pedido</th><th>Itens</th><th>Bruto</th><th>Líquido (75%)</th><th>Status</th><th>Prevista</th><th></th></tr>
+            <tr><th>Pedido</th><th>Itens</th><th>Bruto</th><th>Líquido ({(TRABALHADOR_PCT*100).toFixed(0)}%)</th><th>Status</th><th>Prevista</th><th></th></tr>
           </thead>
           <tbody>
             {claims.map(c => {

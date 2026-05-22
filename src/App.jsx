@@ -54,6 +54,14 @@ function Protected({ children, allow }) {
   if (!profileReady || !profile) {
     return <div className="shell"><div className="page">Carregando perfil…</div></div>;
   }
+  if (profile.disabled) {
+    return (
+      <div className="shell"><div className="page">
+        <h2>Acesso suspenso</h2>
+        <p className="muted">Sua conta foi desabilitada pelo Proprietário. Procure-o no Discord.</p>
+      </div></div>
+    );
+  }
   if (!isProfileComplete(profile) && loc.pathname !== '/perfil') {
     return <Navigate to="/perfil" replace />;
   }
