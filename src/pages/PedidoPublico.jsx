@@ -14,7 +14,7 @@ export default function PedidoPublico() {
   useEffect(() => {
     let alive = true;
     const carregar = async () => {
-      const { data, error } = await supabase.rpc('get_order_public', { p_token: token });
+      const { data, error } = await supabase.rpc('get_order_public', { p_code: token });
       if (!alive) return;
       if (error) { setErro(error.message); setLoading(false); return; }
       setData(data);
