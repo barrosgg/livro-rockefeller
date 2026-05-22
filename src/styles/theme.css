@@ -129,6 +129,142 @@ main.shell:focus-visible {
   outline: none;
 }
 
+/* ---------- Footer (carta timbrada vintage) ---------- */
+.site-footer {
+  margin-top: 60px;
+  padding: 40px 16px 48px;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(176,141,61,.04) 50%, rgba(176,141,61,.08) 100%);
+  border-top: 1px solid var(--paper-edge);
+  position: relative;
+}
+.site-footer::before {
+  /* segunda linha dourada hairline */
+  content: "";
+  position: absolute;
+  top: 4px; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: .5;
+}
+.site-footer-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.site-footer-divisor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 4px;
+}
+.site-footer-divisor .ornament-left,
+.site-footer-divisor .ornament-right {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-deep) 50%, var(--gold-deep) 50%, transparent);
+}
+.site-footer-divisor .ornament-flor {
+  font-size: 1rem;
+  color: var(--gold-deep);
+  line-height: 1;
+}
+
+.site-footer-brand {
+  display: flex;
+  justify-content: center;
+}
+.site-footer-logo {
+  max-width: 160px;
+  height: auto;
+  max-height: 50px;
+  opacity: .85;
+}
+
+.site-footer-empresa {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.site-footer-end {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .76rem;
+  font-weight: 400;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--ink-mute);
+  margin-top: 2px;
+}
+
+.site-footer-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-family: 'Playfair Display', serif;
+  font-size: .85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.site-footer-nav a {
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  padding: 2px 0;
+  transition: color .15s, border-color .15s;
+}
+.site-footer-nav a:hover {
+  color: var(--gold-deep);
+  border-bottom-color: var(--gold);
+}
+.site-footer-nav span { color: var(--ink-faded); }
+
+.site-footer-anno {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: .85rem;
+  color: var(--gold-deep);
+  letter-spacing: .14em;
+}
+
+.site-footer-credits {
+  font-family: 'Lora', serif;
+  font-size: .7rem;
+  color: var(--ink-faded);
+  font-style: italic;
+  margin-top: 6px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+.site-footer-credits a {
+  color: var(--ink-mute);
+  border-bottom: 1px dotted var(--ink-faded);
+}
+.site-footer-credits a:hover {
+  color: var(--gold-deep);
+}
+
+@media (max-width: 540px) {
+  .site-footer { padding: 32px 14px 36px; }
+  .site-footer-logo { max-width: 130px; max-height: 40px; }
+  .site-footer-empresa { font-size: .74rem; letter-spacing: .1em; }
+  .site-footer-credits { flex-direction: column; gap: 4px; }
+  .site-footer-credits span[aria-hidden] { display: none; }
+}
+
 /* ---------- Skip link (a11y) ---------- */
 .skip-link {
   position: absolute;

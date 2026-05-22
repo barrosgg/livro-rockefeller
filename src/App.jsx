@@ -16,6 +16,7 @@ import ReciboPublico from './pages/ReciboPublico.jsx';
 import Avatar from './components/Avatar.jsx';
 import Onboarding from './components/Onboarding.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
+import Footer from './components/Footer.jsx';
 import './styles/onboarding.css';
 
 function Topbar() {
@@ -84,6 +85,7 @@ function Layout() {
       <a href="#main-content" className="skip-link">Pular para o conteúdo</a>
       <Topbar />
       <main id="main-content" className="shell"><Outlet /></main>
+      <Footer />
       {mostrarOnboarding && (
         <Onboarding
           profile={profile}
