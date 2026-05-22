@@ -7,6 +7,7 @@ import { useCommissionPct, useWorkerPct } from '../lib/settings.jsx';
 import { fmt, totalPedido, statusLabel } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
 import Avatar from '../components/Avatar.jsx';
+import ProductIcon from '../components/ProductIcon.jsx';
 
 function Toast({ message, type='ok', onClose }) {
   useEffect(() => {
@@ -330,8 +331,13 @@ export default function PedidoDetalhe() {
             return (
               <tr key={it.id}>
                 <td>
-                  <div>{it.product?.nome}</div>
-                  <div className="muted small">{it.product?.categoria}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ProductIcon slug={it.product?.icon} name={it.product?.nome} size={24} />
+                    <div>
+                      <div>{it.product?.nome}</div>
+                      <div className="muted small">{it.product?.categoria}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="num">{bal.quantidade_total}</td>
                 <td className="num">{bal.quantidade_assumida}</td>

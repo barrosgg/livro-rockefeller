@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { fmt, statusLabel } from '../lib/calc.js';
 import { toCsv, downloadCsv } from '../lib/csv.js';
 import Avatar from '../components/Avatar.jsx';
+import ProductIcon from '../components/ProductIcon.jsx';
 
 const ROLES = ['proprietario', 'gerente', 'trabalhador'];
 
@@ -147,7 +148,7 @@ function ProdutosTab() {
   const categorias = useCategorias();
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [novo, setNovo] = useState({ nome: '', categoria: '', preco_min: '', preco_max: '' });
+  const [novo, setNovo] = useState({ nome: '', categoria: '', preco_min: '', preco_max: '', icon: '' });
   const [editId, setEditId] = useState(null);
   const [editVals, setEditVals] = useState({});
 
@@ -164,6 +165,7 @@ function ProdutosTab() {
     const payload = {
       nome: novo.nome.trim(), categoria: novo.categoria,
       preco_min: Number(novo.preco_min), preco_max: Number(novo.preco_max),
+      icon: novo.icon.trim() || null,
     };
     if (!payload.nome) { alert('Nome obrigatório.'); return; }
     if (payload.preco_min <= 0 || payload.preco_max < payload.preco_min) {
@@ -171,17 +173,18 @@ function ProdutosTab() {
     }
     const { error } = await supabase.from('products').insert(payload);
     if (error) { alert(error.message); return; }
-    setNovo({ nome: '', categoria: categorias[0] || '', preco_min: '', preco_max: '' });
+    setNovo({ nome: '', categoria: categorias[0] || '', preco_min: '', preco_max: '', icon: '' });
     carregar();
   };
 
-  const startEdit = (p) => { setEditId(p.id); setEditVals({ categoria: p.categoria, preco_min: p.preco_min, preco_max: p.preco_max }); };
+  const startEdit = (p) => { setEditId(p.id); setEditVals({ categoria: p.categoria, preco_min: p.preco_min, preco_max: p.preco_max, icon: p.icon || '' }); };
 
   const salvarEdit = async (id) => {
     const v = editVals;
     if (Number(v.preco_min) <= 0 || Number(v.preco_max) < Number(v.preco_min)) { alert('Preço inválido.'); return; }
     const { error } = await supabase.from('products').update({
       categoria: v.categoria, preco_min: Number(v.preco_min), preco_max: Number(v.preco_max),
+      icon: v.icon?.trim() || null,
     }).eq('id', id);
     if (error) { alert(error.message); return; }
     setEditId(null); carregar();
@@ -220,6 +223,12 @@ function ProdutosTab() {
             <input type="number" step="0.01" min="0" value={novo.preco_max}
               onChange={e => setNovo({ ...novo, preco_max: e.target.value })} required />
           </div>
+          <div className="field" style={{ flex: '1 1 180px' }}>
+            <label>Ícone <span className="hint" style={{ marginLeft: 4 }}>game-icons.net</span></label>
+            <input type="text" value={novo.icon}
+              placeholder="ex: lorc/wheat (opcional)"
+              onChange={e => setNovo({ ...novo, icon: e.target.value })} />
+          </div>
           <button className="btn">Adicionar</button>
         </form>
       </div>
@@ -227,16 +236,17 @@ function ProdutosTab() {
       <h3 className="mt-3">{produtos.length} produtos no catálogo</h3>
       <table className="book">
         <colgroup>
-          <col /><col style={{ width: 200 }} /><col style={{ width: 120 }} /><col style={{ width: 120 }} /><col style={{ width: 140 }} />
+          <col style={{ width: 50 }} /><col /><col style={{ width: 200 }} /><col style={{ width: 120 }} /><col style={{ width: 120 }} /><col style={{ width: 180 }} /><col style={{ width: 140 }} />
         </colgroup>
         <thead>
-          <tr><th>Nome</th><th>Categoria</th><th className="num">Preço mín.</th><th className="num">Preço máx.</th><th></th></tr>
+          <tr><th></th><th>Nome</th><th>Categoria</th><th className="num">Preço mín.</th><th className="num">Preço máx.</th><th>Ícone</th><th></th></tr>
         </thead>
         <tbody>
           {produtos.map(p => {
             const editing = editId === p.id;
             return (
               <tr key={p.id}>
+                <td><ProductIcon slug={p.icon} name={p.nome} size={24} /></td>
                 <td>{p.nome}</td>
                 <td>
                   {editing ? (
@@ -253,6 +263,12 @@ function ProdutosTab() {
                   ? <input type="number" step="0.01" value={editVals.preco_max}
                       onChange={e => setEditVals({ ...editVals, preco_max: e.target.value })} />
                   : fmt(p.preco_max)}</td>
+                <td>
+                  {editing
+                    ? <input type="text" value={editVals.icon || ''} placeholder="autor/icon"
+                        onChange={e => setEditVals({ ...editVals, icon: e.target.value })} />
+                    : <span className="muted small">{p.icon || '—'}</span>}
+                </td>
                 <td>
                   {editing ? (
                     <div className="flex gap-1">

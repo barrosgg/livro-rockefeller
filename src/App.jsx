@@ -44,6 +44,17 @@ function Layout() {
     <>
       <Topbar />
       <main className="shell"><Outlet /></main>
+      <footer style={{
+        textAlign: 'center', padding: '20px 16px 28px',
+        fontSize: '.72rem', color: 'var(--ink-faded)', fontStyle: 'italic',
+      }}>
+        Caderno da Fazenda Rockefeller · Ícones de produto por{' '}
+        <a href="https://game-icons.net" target="_blank" rel="noopener noreferrer"
+           style={{ color: 'inherit', borderBottom: '1px dotted var(--ink-faded)' }}>
+          game-icons.net
+        </a>{' '}
+        (Lorc &amp; Delapouite, CC BY 3.0)
+      </footer>
     </>
   );
 }

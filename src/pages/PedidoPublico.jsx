@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import { fmt, statusLabel, totalPedido } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
 import Avatar from '../components/Avatar.jsx';
+import ProductIcon from '../components/ProductIcon.jsx';
 
 export default function PedidoPublico() {
   const { token } = useParams();
@@ -114,7 +115,15 @@ export default function PedidoPublico() {
           <tbody>
             {items.map((it, i) => (
               <tr key={i}>
-                <td>{it.product.nome}<div className="muted small">{it.product.categoria}</div></td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <ProductIcon slug={it.product.icon} name={it.product.nome} size={22} />
+                    <div>
+                      {it.product.nome}
+                      <div className="muted small">{it.product.categoria}</div>
+                    </div>
+                  </div>
+                </td>
                 <td className="num">{it.quantidade}</td>
                 <td className="num">{fmt(it.preco_unit)}</td>
                 <td className="num">{fmt(it.preco_unit * it.quantidade)}</td>

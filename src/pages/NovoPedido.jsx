@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { useLocalStorage } from '../lib/storage.js';
 import { fmt, clamp } from '../lib/calc.js';
 import ProdutoCombo from '../components/ProdutoCombo.jsx';
+import ProductIcon from '../components/ProductIcon.jsx';
 
 function novoNumero() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
@@ -336,8 +337,13 @@ export default function NovoPedido() {
               return (
                 <tr key={it.product.id}>
                   <td>
-                    {it.product.nome}
-                    <div className="muted small">{it.product.categoria}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <ProductIcon slug={it.product.icon} name={it.product.nome} size={24} />
+                      <div>
+                        {it.product.nome}
+                        <div className="muted small">{it.product.categoria}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="num">
                     <input type="number" min="1" value={it.quantidade}

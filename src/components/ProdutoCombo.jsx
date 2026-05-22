@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { fmt } from '../lib/calc.js';
 import { useCategorias } from '../lib/settings.jsx';
+import ProductIcon from './ProductIcon.jsx';
 
 /**
  * Combobox de produto:
@@ -120,7 +121,10 @@ const ProdutoCombo = forwardRef(function ProdutoCombo({ produtos, value, onSelec
                      className={`opt ${isActive ? 'active' : ''}`}
                      onMouseEnter={() => setActiveIdx(myIdx)}
                      onClick={() => { onSelect?.(p); setQ(''); setOpen(false); }}>
-                  <span>{p.nome}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <ProductIcon slug={p.icon} name={p.nome} size={22} />
+                    {p.nome}
+                  </span>
                   <span className="price">{fmt(p.preco_min)}–{fmt(p.preco_max)}</span>
                 </div>
               );
