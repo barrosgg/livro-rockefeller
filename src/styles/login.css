@@ -9,7 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 24px 24px 24px 6%;
+  /* Card mais para a direita pra cobrir o brilho do sol da imagem */
+  padding: 24px 24px 24px 18%;
   overflow: hidden;
   background: var(--bg-1);
 }
@@ -26,6 +27,30 @@
   /* tinta warm leve direto na imagem pra clima sépia */
   filter: sepia(.18) saturate(1.05) brightness(.92);
   pointer-events: none;
+  /* Ken Burns: zoom + pan lento alternando, sensação de cena cinematográfica */
+  transform-origin: 55% 50%;
+  animation: kenBurns 50s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1.06) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.12) translate(-1.5%, -0.8%);
+  }
+  100% {
+    transform: scale(1.08) translate(1.2%, 0.6%);
+  }
+}
+
+/* Respeita preferência do usuário por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .login-bg-img {
+    animation: none;
+    transform: scale(1.04);
+  }
 }
 
 /* Camada sépia bem leve focada no canto esquerdo (onde fica o card) */
