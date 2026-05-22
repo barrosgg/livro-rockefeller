@@ -1,0 +1,263 @@
+/* =====================================================================
+   Credencial do Trabalhador — visual de carteira oficial da Fazenda
+   Família Rockefeller. Inspirado em passaportes/credenciais de 1900.
+   ===================================================================== */
+
+.credencial-stage {
+  display: grid; place-items: center;
+  padding: 20px 0;
+}
+
+.credencial {
+  width: 100%;
+  max-width: 760px;
+  background:
+    linear-gradient(135deg, #fdf9ed 0%, #f5ecd0 100%);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,.25),
+    0 0 0 1px var(--gold),
+    inset 0 0 0 6px var(--paper),
+    inset 0 0 0 7px var(--gold-deep);
+  padding: 36px 40px 30px;
+}
+
+/* Marca d'água do brasão atrás de tudo */
+.credencial::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  width: 75%; height: 80%;
+  background-image: url("/familia-rockefeller.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: .055;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Cantos art-déco da credencial */
+.credencial > .corner {
+  position: absolute;
+  width: 30px; height: 30px;
+  border: 1px solid var(--gold);
+  z-index: 2;
+  pointer-events: none;
+}
+.credencial > .corner.tl { top: 16px; left: 16px; border-right: none; border-bottom: none; }
+.credencial > .corner.tr { top: 16px; right: 16px; border-left: none; border-bottom: none; }
+.credencial > .corner.bl { bottom: 16px; left: 16px; border-right: none; border-top: none; }
+.credencial > .corner.br { bottom: 16px; right: 16px; border-left: none; border-top: none; }
+
+.credencial > * { position: relative; z-index: 1; }
+
+/* Cabeçalho */
+.credencial-header {
+  text-align: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--gold);
+  position: relative;
+}
+.credencial-titulo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: .22em;
+  color: var(--ink);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.credencial-subtitulo {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: .82rem;
+  color: var(--ink-mute);
+  margin-top: 4px;
+  letter-spacing: .08em;
+}
+.credencial-numero {
+  position: absolute;
+  top: -2px; right: 0;
+  font-family: 'Lora', serif;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+
+/* Corpo: avatar à esquerda, dados à direita */
+.credencial-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  margin-top: 24px;
+  align-items: start;
+}
+
+.credencial-avatar-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.credencial-avatar-frame {
+  width: 130px; height: 130px;
+  border: 2px solid var(--gold-deep);
+  padding: 4px;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,.15);
+  position: relative;
+}
+.credencial-avatar-frame::after {
+  /* "carimbo" canto inferior direito */
+  content: "1900";
+  position: absolute;
+  bottom: -8px; right: -8px;
+  background: var(--burgundy);
+  color: var(--paper);
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid #5a160e;
+  transform: rotate(-3deg);
+}
+.credencial-cargo {
+  font-family: 'Playfair Display', serif;
+  font-size: .8rem;
+  letter-spacing: .2em;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Grid de campos */
+.credencial-campos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 22px;
+}
+.credencial-campo {
+  border-bottom: 1px dashed rgba(160,129,48,.4);
+  padding-bottom: 6px;
+}
+.credencial-campo.full { grid-column: 1 / -1; }
+
+.credencial-label {
+  font-family: 'Lora', serif;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  display: block;
+}
+.credencial-valor {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-top: 2px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+.credencial-valor.empty {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .9rem;
+  color: var(--ink-faded);
+}
+
+/* Rodapé com selo + assinatura */
+.credencial-footer {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.credencial-emissao {
+  font-family: 'Lora', serif;
+  font-size: .78rem;
+  font-style: italic;
+  color: var(--ink-mute);
+}
+.credencial-emissao strong {
+  font-style: normal;
+  color: var(--ink);
+}
+
+.credencial-selo {
+  width: 86px; height: 86px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #a73a2a 0%, var(--burgundy) 70%);
+  color: rgba(253, 244, 227, .85);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  text-align: center;
+  transform: rotate(-8deg);
+  border: 2px solid rgba(0,0,0,.18);
+  box-shadow:
+    inset 0 0 8px rgba(0,0,0,.3),
+    0 3px 6px rgba(0,0,0,.2);
+  position: relative;
+}
+.credencial-selo::before {
+  content: "";
+  position: absolute; inset: 6px;
+  border: 1px dashed rgba(253,244,227,.4);
+  border-radius: 50%;
+}
+.credencial-selo-top {
+  font-size: .58rem;
+  letter-spacing: .15em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.credencial-selo-mid {
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1;
+  margin: 2px 0;
+}
+.credencial-selo-bottom {
+  font-size: .56rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* Linha de assinatura */
+.credencial-assinatura {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+}
+.credencial-assinatura-linha {
+  border-top: 1px solid var(--ink-soft);
+  height: 1px;
+  margin-bottom: 4px;
+}
+.credencial-assinatura-label {
+  font-family: 'Lora', serif;
+  font-size: .7rem;
+  font-style: italic;
+  color: var(--ink-mute);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .credencial { padding: 26px 22px 22px; }
+  .credencial-body { grid-template-columns: 1fr; gap: 18px; }
+  .credencial-avatar-wrap { align-items: flex-start; }
+  .credencial-campos { grid-template-columns: 1fr; }
+  .credencial-titulo { font-size: 1rem; letter-spacing: .18em; }
+  .credencial-numero { position: static; display: block; margin-top: 6px; }
+  .credencial-footer { flex-direction: column; align-items: flex-start; }
+}
