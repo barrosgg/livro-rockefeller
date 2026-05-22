@@ -69,6 +69,27 @@
   height: auto;
   max-height: 78px;
 }
+.credencial-empresa {
+  margin-top: 8px;
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.credencial-empresa-end {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .7rem;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--ink-mute);
+  margin-top: 2px;
+  font-weight: 400;
+}
 .credencial-numero {
   position: absolute;
   top: 2px; right: 0;
@@ -97,18 +118,18 @@
 }
 
 .credencial-avatar-wrap {
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
 .credencial-avatar-frame {
-  width: 130px; height: 130px;
+  width: 140px; height: 140px;
   border: 2px solid var(--gold-deep);
   padding: 4px;
   background: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.6);
   position: relative;
+  overflow: hidden;
 }
 .credencial-avatar-frame::after {
-  /* "carimbo" canto inferior direito */
   content: "1900";
   position: absolute;
   bottom: -8px; right: -8px;
@@ -122,15 +143,30 @@
   border-radius: 2px;
   border: 1px solid #5a160e;
   transform: rotate(-3deg);
+  z-index: 2;
+}
+/* Avatar dentro do frame: vira quadrado, preenche tudo, sem borda nem círculo */
+.credencial-avatar-frame > img,
+.credencial-avatar-frame > span {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-size: 4rem !important;
+  object-fit: cover;
 }
 .credencial-cargo {
   font-family: 'Playfair Display', serif;
-  font-size: .8rem;
-  letter-spacing: .2em;
+  font-size: .82rem;
+  letter-spacing: .22em;
   color: var(--gold-deep);
   text-transform: uppercase;
   font-weight: 600;
-  margin-top: 6px;
+  padding: 4px 14px;
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  background: rgba(176,141,61,.05);
 }
 
 /* Grid de campos */
@@ -255,11 +291,12 @@
   margin: 0 12px 4px;
 }
 .credencial-assinatura-label {
-  font-family: 'Lora', serif;
-  font-size: .68rem;
-  font-style: italic;
-  color: var(--ink-mute);
-  letter-spacing: .04em;
+  font-family: 'Playfair Display', serif;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 /* Mobile */

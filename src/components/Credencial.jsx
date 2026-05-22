@@ -34,12 +34,18 @@ export default function Credencial({ profile }) {
         <div className="credencial-emissao-top">Emitida em {formatarData(profile?.criado_em)}</div>
         <div className="credencial-numero">Nº {numero}</div>
         <img className="brand" src="/familia-rockefeller.png" alt="Família Rockefeller" />
+        <div className="credencial-empresa">
+          Rockefeller Produtos Agropecuários S.A.
+          <div className="credencial-empresa-end">
+            Flatneck Station · New Hanover · Westfox
+          </div>
+        </div>
       </header>
 
       <div className="credencial-body">
         <div className="credencial-avatar-wrap">
           <div className="credencial-avatar-frame">
-            <Avatar slug={profile?.avatar} name={profile?.nome_completo} size={118} />
+            <Avatar slug={profile?.avatar} name={profile?.nome_completo} size={132} />
           </div>
           <div className="credencial-cargo">{ROLE_LABELS[profile?.role] || profile?.role}</div>
         </div>
@@ -71,7 +77,7 @@ export default function Credencial({ profile }) {
         <div className="credencial-assinatura">
           <div className="credencial-assinatura-nome">{profile?.nome_completo || '—'}</div>
           <div className="credencial-assinatura-linha" />
-          <div className="credencial-assinatura-label">Assinatura do Trabalhador</div>
+          <div className="credencial-assinatura-label">{profile?.nome_completo || '—'}</div>
         </div>
 
         <div className="credencial-selo" title="Família Rockefeller · Registro Oficial">
