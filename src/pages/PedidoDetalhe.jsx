@@ -1,25 +1,35 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
 import { fmt, totalPedido, statusLabel, TRABALHADOR_PCT, COMISSAO_PCT } from '../lib/calc.js';
 
+function Toast({ message, type='ok', onClose }) {
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(onClose, 2400);
+    return () => clearTimeout(t);
+  }, [message, onClose]);
+  if (!message) return null;
+  return <div className={`toast ${type === 'err' ? 'error' : ''}`}>{message}</div>;
+}
+
 export default function PedidoDetalhe() {
   const { id } = useParams();
   const { profile, user } = useAuth();
-  const navigate = useNavigate();
 
   const [pedido, setPedido] = useState(null);
   const [itens, setItens] = useState([]);
-  const [balance, setBalance] = useState({});      // order_item_id -> em_aberto
-  const [claims, setClaims] = useState([]);        // todos claims com itens + trabalhador
+  const [balance, setBalance] = useState({});
+  const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
 
-  // ---- formulário de claim ----
-  const [novoClaim, setNovoClaim] = useState({}); // order_item_id -> qtd
+  /* ---- claim em construção ---- */
+  const [novoClaim, setNovoClaim] = useState({});
   const [dataPrevista, setDataPrevista] = useState('');
   const [criandoClaim, setCriandoClaim] = useState(false);
 
@@ -46,36 +56,42 @@ export default function PedidoDetalhe() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
+  /* ---- valores agregados ---- */
+  const agg = useMemo(() => {
+    const totais = totalPedido({
+      itens: itens.map(i => ({ preco_unit: i.preco_unit, quantidade: i.quantidade })),
+      desconto_pct: pedido?.desconto_pct || 0,
+    });
+    const qtdTotal = itens.reduce((a, i) => a + i.quantidade, 0);
+    const qtdAssumida = Object.values(balance).reduce((a, b) => a + Number(b.quantidade_assumida || 0), 0);
+    const qtdAberto = Object.values(balance).reduce((a, b) => a + Number(b.quantidade_em_aberto || 0), 0);
+    const pctAssumido = qtdTotal > 0 ? (qtdAssumida / qtdTotal) * 100 : 0;
+    return { ...totais, qtdTotal, qtdAssumida, qtdAberto, pctAssumido };
+  }, [itens, balance, pedido]);
+
   if (loading) return <div className="page">Carregando…</div>;
   if (!pedido) return <div className="page">Pedido não encontrado. <Link to="/pedidos">Voltar</Link></div>;
 
-  const totais = totalPedido({
-    itens: itens.map(i => ({ preco_unit: i.preco_unit, quantidade: i.quantidade })),
-    desconto_pct: pedido.desconto_pct,
-  });
-
-  // ---- ações do gerente ----
+  /* ---- ações gerente ---- */
   const aprovar = async () => {
-    if (!pedido.prazo_entrega) { alert('Defina o prazo antes de aprovar.'); return; }
+    if (!pedido.prazo_entrega) { setToast({ type: 'err', msg: 'Defina o prazo antes de aprovar.' }); return; }
     const { error } = await supabase.from('orders').update({
       status: 'aprovado',
       aprovado_por: user.id,
       aprovado_em: new Date().toISOString(),
     }).eq('id', id);
-    if (error) alert(error.message); else carregar();
+    if (error) setToast({ type: 'err', msg: error.message });
+    else { setToast({ msg: 'Pedido aprovado.' }); carregar(); }
   };
-
   const cancelar = async () => {
     if (!confirm('Cancelar este pedido?')) return;
     const { error } = await supabase.from('orders').update({ status: 'cancelado' }).eq('id', id);
-    if (error) alert(error.message); else carregar();
+    if (error) setToast({ type: 'err', msg: error.message });
+    else { setToast({ msg: 'Pedido cancelado.' }); carregar(); }
   };
 
-  // ---- claim (trabalhador) ----
-  const totalClaimSelecionado = itens.reduce((acc, it) => {
-    const q = Number(novoClaim[it.id] || 0);
-    return acc + q * it.preco_unit;
-  }, 0);
+  /* ---- claim ---- */
+  const totalClaimSelecionado = itens.reduce((acc, it) => acc + Number(novoClaim[it.id] || 0) * it.preco_unit, 0);
 
   const criarClaim = async () => {
     setErro(null);
@@ -86,7 +102,7 @@ export default function PedidoDetalhe() {
     if (!dataPrevista) { setErro('Informe a data prevista de entrega.'); return; }
     for (const e of escolhidos) {
       const aberto = balance[e.order_item_id]?.quantidade_em_aberto ?? 0;
-      if (e.quantidade > aberto) { setErro(`Quantidade acima do saldo em aberto para um item.`); return; }
+      if (e.quantidade > aberto) { setErro('Quantidade acima do saldo em aberto para um item.'); return; }
     }
     setCriandoClaim(true);
     const { data: claim, error: e1 } = await supabase.from('claims').insert({
@@ -100,38 +116,33 @@ export default function PedidoDetalhe() {
       escolhidos.map(e => ({ claim_id: claim.id, order_item_id: e.order_item_id, quantidade: e.quantidade }))
     );
     if (e2) { setErro(e2.message); setCriandoClaim(false); return; }
-
-    // muda status do pedido para em_producao se ainda estava aprovado
     if (pedido.status === 'aprovado') {
       await supabase.from('orders').update({ status: 'em_producao' }).eq('id', id);
     }
     setNovoClaim({}); setDataPrevista(''); setCriandoClaim(false);
+    setToast({ msg: 'Produção assumida.' });
     carregar();
   };
 
-  // ---- entrega (trabalhador) ----
   const marcarEntregue = async (claim) => {
     if (!confirm('Confirma a entrega no baú agora?')) return;
     const { error } = await supabase.from('claims').update({
-      status: 'entregue',
-      entregue_em: new Date().toISOString(),
+      status: 'entregue', entregue_em: new Date().toISOString(),
     }).eq('id', claim.id);
-    if (error) { alert(error.message); return; }
-    // sobe pedido para 'entregue' se todos os itens claim cobrirem 100% e todos claims entregues
+    if (error) { setToast({ type: 'err', msg: error.message }); return; }
     await possivelAtualizarStatusPedido();
+    setToast({ msg: 'Entrega registrada.' });
     carregar();
   };
 
-  // ---- pagamento (gerente) ----
   const marcarPago = async (claim) => {
     if (!confirm('Marcar pagamento como efetuado?')) return;
     const { error } = await supabase.from('claims').update({
-      status: 'pago',
-      pago_em: new Date().toISOString(),
-      pago_por: user.id,
+      status: 'pago', pago_em: new Date().toISOString(), pago_por: user.id,
     }).eq('id', claim.id);
-    if (error) { alert(error.message); return; }
+    if (error) { setToast({ type: 'err', msg: error.message }); return; }
     await possivelAtualizarStatusPedido();
+    setToast({ msg: 'Pagamento registrado.' });
     carregar();
   };
 
@@ -140,7 +151,6 @@ export default function PedidoDetalhe() {
     if (!cls || cls.length === 0) return;
     const todosEntregues = cls.every(c => c.status === 'entregue' || c.status === 'pago');
     const todosPagos = cls.every(c => c.status === 'pago');
-    // saldo em aberto?
     const { data: bal } = await supabase.from('order_item_balance').select('quantidade_em_aberto').eq('order_id', id);
     const saldo = (bal || []).reduce((a, b) => a + Number(b.quantidade_em_aberto), 0);
     if (saldo === 0 && todosPagos) {
@@ -150,54 +160,125 @@ export default function PedidoDetalhe() {
     }
   };
 
-  const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status);
+  const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status) && agg.qtdAberto > 0;
+  const urlPedido = `${window.location.origin}/pedidos/${pedido.id}`;
+
+  /* ---- copia para Discord ---- */
+  const mensagemDiscord = () => {
+    const linhas = [
+      `📜 **Pedido Nº ${pedido.numero_nota}** — Fazenda Rockefeller`,
+      pedido.cliente ? `Cliente: **${pedido.cliente}**` : null,
+      `Prazo: **${pedido.prazo_entrega ? new Date(pedido.prazo_entrega).toLocaleString('pt-BR') : 'a definir'}**`,
+      `Total: **${fmt(agg.total)}** · Em aberto: **${agg.qtdAberto}/${agg.qtdTotal}** unidades`,
+      '',
+      '**Itens em aberto:**',
+      ...itens
+        .filter(it => (balance[it.id]?.quantidade_em_aberto || 0) > 0)
+        .map(it => `• ${it.product.nome} — ${balance[it.id]?.quantidade_em_aberto}× (${fmt(it.preco_unit)})`),
+      '',
+      `💰 Trabalhadores recebem **${(TRABALHADOR_PCT*100).toFixed(0)}%** do bruto.`,
+      `👉 Assumir produção: ${urlPedido}`,
+    ];
+    return linhas.filter(Boolean).join('\n');
+  };
+
+  const copiar = async (texto, msg) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setToast({ msg });
+    } catch {
+      setToast({ type: 'err', msg: 'Não foi possível copiar.' });
+    }
+  };
 
   return (
     <div className="page">
-      <div className="flex between center-y">
+      {/* ---------- Cabeçalho ---------- */}
+      <div className="flex between center-y wrap gap-2">
         <div>
-          <h1 className="mt-0">Pedido Nº {pedido.numero_nota}</h1>
-          <p className="muted">
-            Cliente: {pedido.cliente || '—'} · Criado em {new Date(pedido.criado_em).toLocaleString('pt-BR')}
+          <Link to="/pedidos" className="muted small">← Pedidos</Link>
+          <h1 className="mt-1">Pedido Nº {pedido.numero_nota}</h1>
+          <p className="muted small mt-0">
+            {pedido.cliente ? <>Cliente <strong>{pedido.cliente}</strong> · </> : null}
+            Criado em {new Date(pedido.criado_em).toLocaleString('pt-BR')}
+            {pedido.prazo_entrega && <> · Prazo <strong>{new Date(pedido.prazo_entrega).toLocaleString('pt-BR')}</strong></>}
           </p>
         </div>
-        <div className="flex gap-2 center-y">
+        <div className="flex gap-1 center-y wrap">
           <span className={`badge ${pedido.status}`}>{statusLabel(pedido.status)}</span>
-          {isManager && pedido.status === 'rascunho' && <button className="btn" onClick={aprovar}>Aprovar</button>}
-          {isManager && pedido.status !== 'concluido' && pedido.status !== 'cancelado' &&
-            <button className="btn danger" onClick={cancelar}>Cancelar</button>}
+          <button className="btn ghost sm" onClick={() => copiar(urlPedido, 'Link copiado.')}>📎 Link</button>
+          <button className="btn ghost sm" onClick={() => copiar(mensagemDiscord(), 'Mensagem Discord copiada.')}>💬 Discord</button>
+          {isManager && pedido.status === 'rascunho' && <button className="btn success sm" onClick={aprovar}>Aprovar</button>}
+          {isManager && !['concluido','cancelado'].includes(pedido.status) &&
+            <button className="btn danger sm" onClick={cancelar}>Cancelar</button>}
         </div>
       </div>
-      <div className="divider" />
 
-      {pedido.anotacoes && <p><em>{pedido.anotacoes}</em></p>}
-      <p>
-        Prazo: {pedido.prazo_entrega ? new Date(pedido.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">não definido</span>}
-      </p>
+      {pedido.anotacoes && (
+        <div className="card mt-2" style={{ background: 'rgba(234,217,160,.25)', borderStyle: 'dashed' }}>
+          <span className="muted small">Anotações:</span> {pedido.anotacoes}
+        </div>
+      )}
 
-      <h2>Itens</h2>
+      {/* ---------- KPIs ---------- */}
+      <div className="grid-3 mt-3">
+        <div className="stat">
+          <div className="label">Progresso</div>
+          <div className="value">{agg.pctAssumido.toFixed(0)}%</div>
+          <div className="hint">{agg.qtdAssumida} de {agg.qtdTotal} unidades assumidas</div>
+        </div>
+        <div className="stat">
+          <div className="label">Em aberto</div>
+          <div className="value">{agg.qtdAberto}</div>
+          <div className="hint">{itens.length} item(ns) no pedido</div>
+        </div>
+        <div className="stat accent">
+          <div className="label">Total do pedido</div>
+          <div className="value">{fmt(agg.total)}</div>
+          <div className="hint">Subtotal {fmt(agg.subtotal)} · Desc. −{fmt(agg.desconto)}</div>
+        </div>
+      </div>
+
+      {/* ---------- Tabela de itens ---------- */}
+      <h2 className="mt-3">Itens</h2>
       <table className="book">
         <thead>
-          <tr><th>Produto</th><th>Pedido</th><th>Assumido</th><th>Em aberto</th><th>Preço</th><th>Subtotal</th>
-            {podeAssumir && <th>Assumir qtd.</th>}
+          <tr>
+            <th>Produto</th>
+            <th>Pedido</th>
+            <th>Assumido</th>
+            <th>Aberto</th>
+            <th>Preço</th>
+            <th>Subtotal</th>
+            {podeAssumir && <th>Assumir</th>}
           </tr>
         </thead>
         <tbody>
           {itens.map(it => {
             const bal = balance[it.id] || { quantidade_total: it.quantidade, quantidade_assumida: 0, quantidade_em_aberto: it.quantidade };
+            const aberto = Number(bal.quantidade_em_aberto);
             return (
               <tr key={it.id}>
-                <td>{it.product?.nome}</td>
+                <td>
+                  <div>{it.product?.nome}</div>
+                  <div className="muted small">{it.product?.categoria}</div>
+                </td>
                 <td className="num">{bal.quantidade_total}</td>
                 <td className="num">{bal.quantidade_assumida}</td>
-                <td className="num"><strong>{bal.quantidade_em_aberto}</strong></td>
+                <td className="num"><strong style={{ color: aberto > 0 ? 'var(--ouro-prof)' : 'var(--verde-livro)' }}>{aberto}</strong></td>
                 <td className="num">{fmt(it.preco_unit)}</td>
                 <td className="num">{fmt(it.preco_unit * it.quantidade)}</td>
                 {podeAssumir && (
                   <td className="num">
-                    <input type="number" min="0" max={bal.quantidade_em_aberto} style={{ width: 80 }}
-                      value={novoClaim[it.id] || ''} disabled={bal.quantidade_em_aberto === 0}
-                      onChange={e => setNovoClaim(c => ({ ...c, [it.id]: e.target.value }))} />
+                    {aberto > 0 ? (
+                      <input type="number" min="0" max={aberto} style={{ width: 80 }}
+                        value={novoClaim[it.id] || ''}
+                        placeholder="0"
+                        onChange={e => {
+                          const v = Math.min(aberto, Math.max(0, Number(e.target.value) || 0));
+                          setNovoClaim(c => ({ ...c, [it.id]: v }));
+                        }} />
+                    ) : <span className="muted small">—</span>}
                   </td>
                 )}
               </tr>
@@ -206,46 +287,37 @@ export default function PedidoDetalhe() {
         </tbody>
       </table>
 
-      <div className="flex between mt-2">
-        <div />
-        <div className="right">
-          <div className="muted">Subtotal: <span className="num">{fmt(totais.subtotal)}</span></div>
-          <div className="muted">Desconto ({pedido.desconto_pct}%): <span className="num">−{fmt(totais.desconto)}</span></div>
-          <div><strong>Total: <span className="num">{fmt(totais.total)}</span></strong></div>
-        </div>
-      </div>
-
-      {/* Formulário de claim */}
+      {/* ---------- Formulário de claim ---------- */}
       {podeAssumir && (
-        <>
-          <div className="divider" />
-          <h2>Assumir Produção</h2>
-          <p className="muted">
-            Você produzirá os itens marcados acima. A Fazenda retém {(COMISSAO_PCT*100).toFixed(0)}% de comissão;
-            sua remuneração será {(TRABALHADOR_PCT*100).toFixed(0)}% do bruto.
+        <div className="card mt-3" style={{ borderColor: 'var(--ouro-medio)' }}>
+          <h3 className="mt-0">Assumir Produção</h3>
+          <p className="muted small">
+            Marque as quantidades que você consegue produzir na tabela acima.
+            A Fazenda retém {(COMISSAO_PCT*100).toFixed(0)}% — você recebe {(TRABALHADOR_PCT*100).toFixed(0)}% do bruto.
           </p>
-          <div className="row">
+          <div className="row mt-2">
             <div className="field" style={{ flex: '1 1 260px' }}>
               <label>Data prevista de entrega</label>
               <input type="datetime-local" value={dataPrevista} onChange={e => setDataPrevista(e.target.value)} />
             </div>
-            <div className="card" style={{ flex: '1 1 260px' }}>
-              <div className="muted">Bruto da sua produção: <span className="num">{fmt(totalClaimSelecionado)}</span></div>
-              <div className="muted">Comissão Fazenda ({(COMISSAO_PCT*100).toFixed(0)}%): <span className="num">−{fmt(totalClaimSelecionado * COMISSAO_PCT)}</span></div>
-              <div><strong>Você receberá: <span className="num">{fmt(totalClaimSelecionado * TRABALHADOR_PCT)}</span></strong></div>
+            <div className="stat" style={{ flex: '1 1 240px' }}>
+              <div className="label">Sua remuneração</div>
+              <div className="value" style={{ color: 'var(--verde-livro)' }}>{fmt(totalClaimSelecionado * TRABALHADOR_PCT)}</div>
+              <div className="hint">Bruto {fmt(totalClaimSelecionado)} · Comissão −{fmt(totalClaimSelecionado * COMISSAO_PCT)}</div>
             </div>
           </div>
-          <button className="btn" disabled={criandoClaim || totalClaimSelecionado === 0} onClick={criarClaim}>
-            {criandoClaim ? 'Salvando…' : 'Confirmar Produção'}
+          <button className="btn lg" disabled={criandoClaim || totalClaimSelecionado === 0} onClick={criarClaim}>
+            {criandoClaim ? 'Salvando…' : '✔ Confirmar Produção'}
           </button>
-          {erro && <p style={{ color: 'var(--vermelho)' }}>{erro}</p>}
-        </>
+          {erro && <p className="mt-2" style={{ color: 'var(--vermelho)' }}>{erro}</p>}
+        </div>
       )}
 
-      {/* Lista de claims */}
-      <div className="divider" />
-      <h2>Trabalhadores na Produção</h2>
-      {claims.length === 0 ? <p className="muted">Nenhum trabalhador assumiu itens ainda.</p> : (
+      {/* ---------- Trabalhadores na produção ---------- */}
+      <h2 className="mt-3">Produção ({claims.length})</h2>
+      {claims.length === 0 ? (
+        <div className="card"><p className="muted it small mt-0">Nenhum trabalhador assumiu itens ainda. Compartilhe o link no Discord para chamar a galera.</p></div>
+      ) : (
         <div className="stack">
           {claims.map(c => {
             const bruto = (c.items || []).reduce((a, ci) => a + ci.quantidade * Number(ci.order_item.preco_unit), 0);
@@ -253,52 +325,50 @@ export default function PedidoDetalhe() {
             const isOwnerClaim = c.trabalhador_id === user.id;
             return (
               <div key={c.id} className="card">
-                <div className="flex between center-y">
+                <div className="flex between center-y wrap gap-2">
                   <div>
-                    <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle || c.trabalhador_id}</strong>
-                    <div className="muted" style={{ fontSize: '.85rem' }}>
+                    <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
+                    <div className="muted small">
                       ID {c.trabalhador?.identificacao} · Discord {c.trabalhador?.discord_handle} · Conta {c.trabalhador?.conta_bancaria}
                     </div>
                   </div>
-                  <span className={`badge ${c.status}`}>{statusLabel(c.status)}</span>
+                  <div className="flex gap-1 center-y wrap">
+                    <span className={`badge ${c.status}`}>{statusLabel(c.status)}</span>
+                    {isOwnerClaim && c.status === 'em_producao' && (
+                      <button className="btn success sm" onClick={() => marcarEntregue(c)}>✔ Confirmar entrega</button>
+                    )}
+                    {isManager && c.status === 'entregue' && (
+                      <button className="btn sm" onClick={() => marcarPago(c)}>💰 Marcar Pago</button>
+                    )}
+                  </div>
                 </div>
-                <table className="book mt-2">
-                  <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th></tr></thead>
-                  <tbody>
-                    {(c.items || []).map(ci => (
-                      <tr key={ci.id}>
-                        <td>{ci.order_item.product?.nome}</td>
-                        <td className="num">{ci.quantidade}</td>
-                        <td className="num">{fmt(ci.order_item.preco_unit)}</td>
-                        <td className="num">{fmt(ci.quantidade * Number(ci.order_item.preco_unit))}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="flex between mt-2">
+
+                <div className="mt-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(c.items || []).map(ci => (
+                    <span key={ci.id} className="badge" style={{ background: 'var(--page-edge)', color: 'var(--tinta)', border: '1px solid var(--ouro-medio)' }}>
+                      {ci.order_item.product?.nome} ×{ci.quantidade}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex between center-y wrap mt-2 small">
                   <div className="muted">
                     Prevista: {new Date(c.data_prevista_entrega).toLocaleString('pt-BR')}
                     {c.entregue_em && <> · Entregue: {new Date(c.entregue_em).toLocaleString('pt-BR')}</>}
                     {c.pago_em && <> · Pago: {new Date(c.pago_em).toLocaleString('pt-BR')}</>}
                   </div>
                   <div className="right">
-                    <div className="muted">Bruto: <span className="num">{fmt(bruto)}</span></div>
-                    <div><strong>Líquido: <span className="num">{fmt(liquido)}</span></strong></div>
+                    <span className="muted">Bruto {fmt(bruto)} · </span>
+                    <strong style={{ color: 'var(--verde-livro)' }}>Líquido {fmt(liquido)}</strong>
                   </div>
-                </div>
-                <div className="flex gap-2 mt-2">
-                  {isOwnerClaim && c.status === 'em_producao' && (
-                    <button className="btn" onClick={() => marcarEntregue(c)}>Confirmar entrega no baú</button>
-                  )}
-                  {isManager && c.status === 'entregue' && (
-                    <button className="btn" onClick={() => marcarPago(c)}>Marcar como Pago</button>
-                  )}
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      <Toast message={toast?.msg} type={toast?.type} onClose={() => setToast(null)} />
     </div>
   );
 }

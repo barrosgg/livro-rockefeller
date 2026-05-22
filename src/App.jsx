@@ -22,7 +22,8 @@ function Topbar() {
         {profile?.role === 'proprietario' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin</NavLink>}
       </nav>
       <div className="user">
-        <span>{profile?.nome_completo || profile?.discord_handle || '...'}</span>
+        <span className="name">{profile?.nome_completo || profile?.discord_handle || '...'}</span>
+        {profile?.role && <span className={`badge ${profile.role}`}>{profile.role}</span>}
         <button className="btn ghost sm" onClick={signOut}>Sair</button>
       </div>
     </header>

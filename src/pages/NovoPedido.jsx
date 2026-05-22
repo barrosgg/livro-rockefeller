@@ -1,11 +1,85 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
-import { fmt, clamp, totalPedido } from '../lib/calc.js';
+import { fmt, clamp } from '../lib/calc.js';
+
+const ORDEM_CATEGORIAS = [
+  'Frutas, Grãos & Vegetais',
+  'Laticínios',
+  'Animais & Insumos',
+  'Especiarias & Outros',
+  'Matérias-primas',
+  'Sacos',
+];
 
 function novoNumero() {
   return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+/* ----- Combobox: busca + dropdown agrupado por categoria ----- */
+function ProdutoCombo({ produtos, value, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState('');
+  const inputRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!wrapRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
+
+  const filtrados = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return produtos;
+    return produtos.filter(p => p.nome.toLowerCase().includes(term));
+  }, [q, produtos]);
+
+  const grupos = useMemo(() => {
+    const map = new Map();
+    for (const p of filtrados) {
+      if (!map.has(p.categoria)) map.set(p.categoria, []);
+      map.get(p.categoria).push(p);
+    }
+    return ORDEM_CATEGORIAS
+      .map(cat => [cat, map.get(cat) || []])
+      .filter(([, arr]) => arr.length > 0);
+  }, [filtrados]);
+
+  return (
+    <div className="combo" ref={wrapRef}>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value ? value.nome : q}
+        placeholder="Buscar ou abrir lista…"
+        onFocus={() => setOpen(true)}
+        onChange={(e) => { setQ(e.target.value); onSelect(null); setOpen(true); }}
+        onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
+      />
+      {open && (
+        <div className="combo-list">
+          {grupos.length === 0 ? (
+            <div className="opt muted">Nenhum produto.</div>
+          ) : grupos.map(([cat, arr]) => (
+            <div key={cat}>
+              <div className="group-label">{cat}</div>
+              {arr.map(p => (
+                <div key={p.id} className={`opt ${value?.id === p.id ? 'active' : ''}`}
+                     onClick={() => { onSelect(p); setQ(''); setOpen(false); }}>
+                  <span>{p.nome}</span>
+                  <span className="price">{fmt(p.preco_min)}–{fmt(p.preco_max)}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function NovoPedido() {
@@ -13,10 +87,9 @@ export default function NovoPedido() {
   const navigate = useNavigate();
 
   const [produtos, setProdutos] = useState([]);
-  const [busca, setBusca] = useState('');
-  const [itens, setItens] = useState([]);            // [{product, quantidade, preco_unit}]
-  const [qtd, setQtd] = useState(50);
   const [selProd, setSelProd] = useState(null);
+  const [itens, setItens] = useState([]);
+  const [qtd, setQtd] = useState(50);
 
   const [cliente, setCliente] = useState('');
   const [anotacoes, setAnotacoes] = useState('');
@@ -33,14 +106,9 @@ export default function NovoPedido() {
     });
   }, []);
 
-  const sugestoes = useMemo(() => {
-    const q = busca.trim().toLowerCase();
-    if (!q) return produtos.slice(0, 20);
-    return produtos.filter(p => p.nome.toLowerCase().includes(q)).slice(0, 20);
-  }, [busca, produtos]);
-
   const adicionar = () => {
     if (!selProd || qtd <= 0) return;
+    // Default: ponto médio entre min e max
     const preco_unit = Number(((selProd.preco_min + selProd.preco_max) / 2).toFixed(2));
     setItens((arr) => {
       const idx = arr.findIndex(i => i.product.id === selProd.id);
@@ -51,13 +119,31 @@ export default function NovoPedido() {
       }
       return [...arr, { product: selProd, quantidade: qtd, preco_unit }];
     });
-    setBusca(''); setSelProd(null);
+    setSelProd(null); setQtd(50);
   };
 
   const setItem = (i, patch) => setItens((arr) => arr.map((it, idx) => idx === i ? { ...it, ...patch } : it));
   const remover = (i) => setItens((arr) => arr.filter((_, idx) => idx !== i));
 
-  const totais = totalPedido({ itens: itens.map(i => ({ preco_unit: i.preco_unit, quantidade: i.quantidade })), desconto_pct: descontoPct });
+  /* ---- Cálculos com desconto capado pela margem ---- */
+  const calc = useMemo(() => {
+    const subtotal = itens.reduce((a, it) => a + it.preco_unit * it.quantidade, 0);
+    const subtotalNoMin = itens.reduce((a, it) => a + it.product.preco_min * it.quantidade, 0);
+    // Margem máxima que pode virar desconto sem ficar abaixo do mínimo:
+    const margemMaxAbs = Math.max(0, subtotal - subtotalNoMin);
+    const descontoMaxPct = subtotal > 0 ? (margemMaxAbs / subtotal) * 100 : 0;
+    const pctEfetivo = Math.min(descontoPct, descontoMaxPct);
+    const descAbs = subtotal * (pctEfetivo / 100);
+    return {
+      subtotal,
+      subtotalNoMin,
+      descontoMaxPct,
+      pctEfetivo,
+      descAbs,
+      total: subtotal - descAbs,
+      extrapolado: descontoPct > descontoMaxPct + 0.001,
+    };
+  }, [itens, descontoPct]);
 
   const salvar = async (status) => {
     setErro(null);
@@ -69,7 +155,7 @@ export default function NovoPedido() {
       numero_nota: numero,
       cliente: cliente || null,
       anotacoes: anotacoes || null,
-      desconto_pct: descontoPct,
+      desconto_pct: calc.pctEfetivo, // usa o efetivo (capado)
       status,
       prazo_entrega: prazo ? new Date(prazo).toISOString() : null,
       criado_por: user.id,
@@ -93,53 +179,42 @@ export default function NovoPedido() {
 
   return (
     <div className="page">
-      <div className="flex between center-y">
-        <h1 className="mt-0">Novo Pedido</h1>
+      <div className="flex between center-y wrap gap-2">
+        <div>
+          <h1 className="mt-0">Novo Pedido</h1>
+          <p className="muted small mt-0">Monte o orçamento. Ao aprovar, vai para produção e os trabalhadores podem assumir.</p>
+        </div>
         <span className="seal">Nota Nº {numero}</span>
       </div>
-      <p className="muted">Monte o orçamento. Ao <em>aprovar</em>, o pedido vai para produção e os trabalhadores poderão assumir itens.</p>
       <div className="divider" />
 
       <div className="row">
-        {/* Página esquerda — buscar e adicionar */}
-        <section className="card" style={{ flex: '1 1 360px' }}>
+        {/* ---------- Lado esquerdo: adicionar item ---------- */}
+        <section className="card" style={{ flex: '1 1 340px' }}>
           <h3>Adicionar Item</h3>
           <div className="field">
             <label>Produto</label>
-            <input type="text" value={busca} placeholder="Buscar produto…"
-              onChange={(e) => { setBusca(e.target.value); setSelProd(null); }} />
-            {busca && !selProd && (
-              <div className="card" style={{ marginTop: 6, padding: 6, maxHeight: 220, overflow: 'auto' }}>
-                {sugestoes.length === 0 && <div className="muted">Nenhum produto.</div>}
-                {sugestoes.map(p => (
-                  <div key={p.id} className="flex between center-y"
-                       style={{ padding: '4px 6px', cursor: 'pointer' }}
-                       onClick={() => { setSelProd(p); setBusca(p.nome); }}>
-                    <span>{p.nome}</span>
-                    <span className="muted num">{fmt(p.preco_min)}–{fmt(p.preco_max)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <ProdutoCombo produtos={produtos} value={selProd} onSelect={setSelProd} />
+            {selProd && <div className="hint">Preço {fmt(selProd.preco_min)} – {fmt(selProd.preco_max)} · {selProd.categoria}</div>}
           </div>
           <div className="field">
             <label>Quantidade</label>
             <input type="number" min="1" value={qtd} onChange={(e) => setQtd(Number(e.target.value) || 0)} />
-            <div className="flex gap-2 mt-1" style={{ flexWrap: 'wrap' }}>
+            <div className="flex gap-1 mt-1 wrap">
               {[1, 10, 50, 100, 500, 1000].map(n => (
                 <button key={n} type="button" className="btn ghost sm" onClick={() => setQtd(q => q + n)}>+{n}</button>
               ))}
-              <button type="button" className="btn ghost sm" onClick={() => setQtd(0)}>zerar</button>
+              <button type="button" className="btn ghost sm" onClick={() => setQtd(1)}>zerar</button>
             </div>
           </div>
           <button className="btn" disabled={!selProd || qtd <= 0} onClick={adicionar}>Adicionar ao Pedido</button>
         </section>
 
-        {/* Página direita — pedido */}
-        <section className="card" style={{ flex: '2 1 520px' }}>
+        {/* ---------- Lado direito: itens do pedido ---------- */}
+        <section className="card" style={{ flex: '2 1 540px' }}>
           <h3>Itens do Pedido</h3>
           {itens.length === 0 ? (
-            <p className="muted">Nenhum item ainda.</p>
+            <p className="muted it small">Nenhum item ainda — adicione produtos ao lado.</p>
           ) : (
             <table className="book">
               <thead>
@@ -150,7 +225,7 @@ export default function NovoPedido() {
                   const sub = it.preco_unit * it.quantidade;
                   return (
                     <tr key={it.product.id}>
-                      <td>{it.product.nome}<div className="muted" style={{fontSize:'.8rem'}}>{it.product.categoria}</div></td>
+                      <td>{it.product.nome}<div className="muted small">{it.product.categoria}</div></td>
                       <td className="num">
                         <input type="number" min="1" value={it.quantidade} style={{ width: 80 }}
                           onChange={e => setItem(i, { quantidade: Math.max(1, Number(e.target.value) || 0) })} />
@@ -159,7 +234,7 @@ export default function NovoPedido() {
                         <input type="number" step="0.01" min={it.product.preco_min} max={it.product.preco_max}
                           value={it.preco_unit} style={{ width: 90 }}
                           onChange={e => setItem(i, { preco_unit: clamp(Number(e.target.value) || 0, it.product.preco_min, it.product.preco_max) })} />
-                        <div className="muted" style={{fontSize:'.75rem'}}>{fmt(it.product.preco_min)}–{fmt(it.product.preco_max)}</div>
+                        <div className="muted small">{fmt(it.product.preco_min)}–{fmt(it.product.preco_max)}</div>
                       </td>
                       <td className="num">{fmt(sub)}</td>
                       <td><button className="btn ghost sm" onClick={() => remover(i)}>×</button></td>
@@ -176,10 +251,10 @@ export default function NovoPedido() {
               <label>Cliente</label>
               <input type="text" value={cliente} onChange={e => setCliente(e.target.value)} />
             </div>
-            <div className="field" style={{ flex: '0 0 140px' }}>
-              <label>Desconto (%)</label>
-              <input type="number" min="0" max="100" step="1" value={descontoPct}
-                onChange={e => setDescontoPct(clamp(Number(e.target.value) || 0, 0, 100))} />
+            <div className="field" style={{ flex: '0 0 180px' }}>
+              <label>Desconto (%) <span className="hint">máx {calc.descontoMaxPct.toFixed(1)}%</span></label>
+              <input type="number" min="0" max={Math.floor(calc.descontoMaxPct * 10) / 10} step="0.5" value={descontoPct}
+                onChange={e => setDescontoPct(clamp(Number(e.target.value) || 0, 0, calc.descontoMaxPct))} />
             </div>
             <div className="field" style={{ flex: '1 1 240px' }}>
               <label>Prazo de entrega</label>
@@ -188,21 +263,35 @@ export default function NovoPedido() {
           </div>
           <div className="field">
             <label>Anotações</label>
-            <textarea maxLength={280} value={anotacoes} onChange={e => setAnotacoes(e.target.value)} />
+            <textarea maxLength={280} value={anotacoes} onChange={e => setAnotacoes(e.target.value)}
+              placeholder="Observações para os trabalhadores (opcional, até 280 caracteres)" />
           </div>
 
-          <div className="flex between center-y mt-2">
-            <div>
-              <div className="muted">Subtotal: <span className="num">{fmt(totais.subtotal)}</span></div>
-              <div className="muted">Desconto: <span className="num">−{fmt(totais.desconto)}</span></div>
-              <div><strong>Total: <span className="num">{fmt(totais.total)}</span></strong></div>
+          <div className="grid-3 mt-2">
+            <div className="stat">
+              <div className="label">Subtotal</div>
+              <div className="value">{fmt(calc.subtotal)}</div>
             </div>
-            <div className="flex gap-2">
-              <button className="btn ghost" disabled={salvando} onClick={() => salvar('rascunho')}>Salvar Rascunho</button>
-              <button className="btn" disabled={salvando} onClick={() => salvar('aprovado')}>Aprovar &amp; Enviar à Produção</button>
+            <div className="stat">
+              <div className="label">Desconto</div>
+              <div className="value" style={{ color: calc.descAbs > 0 ? 'var(--vermelho)' : 'var(--tinta-mute)' }}>
+                −{fmt(calc.descAbs)}
+              </div>
+              {calc.extrapolado && <div className="hint" style={{ color: 'var(--vermelho)' }}>capado em {calc.descontoMaxPct.toFixed(1)}%</div>}
+            </div>
+            <div className="stat accent">
+              <div className="label">Total</div>
+              <div className="value">{fmt(calc.total)}</div>
             </div>
           </div>
-          {erro && <p style={{ color: 'var(--vermelho)' }}>{erro}</p>}
+
+          <div className="flex gap-2 mt-3 wrap">
+            <button className="btn ghost" disabled={salvando} onClick={() => salvar('rascunho')}>Salvar Rascunho</button>
+            <button className="btn" disabled={salvando} onClick={() => salvar('aprovado')}>
+              {salvando ? 'Salvando…' : 'Aprovar & Enviar à Produção'}
+            </button>
+          </div>
+          {erro && <p style={{ color: 'var(--vermelho)' }} className="mt-2">{erro}</p>}
         </section>
       </div>
     </div>
