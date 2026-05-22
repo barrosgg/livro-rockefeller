@@ -129,6 +129,19 @@ left join claims c on c.id = ci.claim_id
 group by oi.id;
 
 -- =====================================================================
+-- GRANTS (necessários para o role 'authenticated' acessar via API)
+-- =====================================================================
+grant usage on schema public to anon, authenticated;
+grant select on products to anon, authenticated;
+grant select, insert, update, delete on profiles      to authenticated;
+grant select, insert, update, delete on orders        to authenticated;
+grant select, insert, update, delete on order_items   to authenticated;
+grant select, insert, update, delete on claims        to authenticated;
+grant select, insert, update, delete on claim_items   to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+grant select on order_item_balance to authenticated;
+
+-- =====================================================================
 -- ROW LEVEL SECURITY
 -- =====================================================================
 alter table profiles      enable row level security;
