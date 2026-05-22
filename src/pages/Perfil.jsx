@@ -8,12 +8,14 @@ import Contrato from '../components/Contrato.jsx';
 import '../styles/credencial.css';
 import '../styles/contrato.css';
 
-/* ============== VISTA — Credencial + ações + contrato ============== */
+/* ============== VISTA — Tabs Credencial/Contrato ============== */
 function CredencialView({ profile, onEdit, onContratoAssinado }) {
+  const [tab, setTab] = useState('credencial');
   const [toast, setToast] = useState(null);
   const url = profile?.public_code
     ? `${window.location.origin}/c/${profile.public_code}`
     : null;
+  const contratoOk = !!profile?.contrato_assinado_em;
 
   const copiar = async () => {
     if (!url) return;
@@ -28,29 +30,56 @@ function CredencialView({ profile, onEdit, onContratoAssinado }) {
   };
 
   return (
-    <>
-      <div className="credencial-stage">
-        <Credencial profile={profile} />
+    <div style={{ maxWidth: 820, margin: '0 auto' }}>
+      {/* Tabs */}
+      <div className="perfil-tabs">
+        <button
+          className={`perfil-tab ${tab === 'credencial' ? 'active' : ''}`}
+          onClick={() => setTab('credencial')}>
+          Credencial
+        </button>
+        <button
+          className={`perfil-tab ${tab === 'contrato' ? 'active' : ''}`}
+          onClick={() => setTab('contrato')}>
+          Contrato
+          {contratoOk
+            ? <span className="perfil-tab-status ok">✓</span>
+            : <span className="perfil-tab-status pendente">!</span>}
+        </button>
+      </div>
 
-        <div className="mt-2 center flex gap-1" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button className="btn" onClick={onEdit}>Editar Credencial</button>
-          {url && (
-            <button className="btn ghost" onClick={copiar}>📎 Copiar link público</button>
+      {tab === 'credencial' && (
+        <div className="credencial-stage">
+          <Credencial profile={profile} />
+
+          <div className="mt-2 center flex gap-1" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn" onClick={onEdit}>Editar Credencial</button>
+            {url && (
+              <button className="btn ghost" onClick={copiar}>📎 Copiar link público</button>
+            )}
+            {url && (
+              <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer">
+                👁 Visualizar
+              </a>
+            )}
+          </div>
+
+          {!contratoOk && (
+            <div className="perfil-alerta-contrato" onClick={() => setTab('contrato')}>
+              ⚠️ Contrato pendente — clique aqui para revisar e assinar
+            </div>
           )}
-          {url && (
-            <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer">
-              👁 Visualizar
-            </a>
-          )}
+
+          {toast && <div className="toast">{toast}</div>}
         </div>
+      )}
 
-        {toast && <div className="toast">{toast}</div>}
-      </div>
-
-      <div className="mt-4">
-        <Contrato profile={profile} onAssinar={onContratoAssinado} />
-      </div>
-    </>
+      {tab === 'contrato' && (
+        <div>
+          <Contrato profile={profile} onAssinar={onContratoAssinado} />
+        </div>
+      )}
+    </div>
   );
 }
 

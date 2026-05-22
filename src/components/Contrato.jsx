@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-function fmtDataLora(iso) {
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho',
+               'julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function fmtData1901(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  const dia = String(d.getDate()).padStart(2, '0');
-  const meses = ['janeiro','fevereiro','março','abril','maio','junho',
-                 'julho','agosto','setembro','outubro','novembro','dezembro'];
-  return `${dia} de ${meses[d.getMonth()]} de 1901`;
+  return `${String(d.getDate()).padStart(2,'0')} de ${MESES[d.getMonth()]} de 1901`;
+}
+
+function fmtHora(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}h${mm}`;
 }
 
 const REGRAS = [
@@ -95,23 +103,55 @@ export default function Contrato({ profile, onAssinar }) {
         <h3>Cláusula Quinta — Da Vigência</h3>
         <p>
           Este contrato vigora a partir da data do aceite eletrônico, por prazo indeterminado,
-          podendo ser rescindido por qualquer das partes mediante comunicação.
+          enquanto perdurar a relação de prestação de serviços.
+        </p>
+
+        <h3>Cláusula Sexta — Da Rescisão</h3>
+        <p>
+          O presente contrato poderá ser rescindido a qualquer tempo, por qualquer das partes,
+          mediante comunicação às proprietárias da Fazenda ou pelo próprio sistema. A rescisão
+          não isenta as partes do cumprimento das obrigações já assumidas, em especial:
+          (i) a entrega de itens cuja produção já tenha sido iniciada por meio de pedidos
+          aceitos; (ii) o pagamento das remunerações devidas por entregas confirmadas;
+          (iii) o respeito às regras de harmonia previstas na Cláusula Quarta. Em caso de
+          descumprimento das cláusulas e regras aqui estabelecidas, a CONTRATANTE poderá
+          rescindir unilateralmente o contrato, com efeito imediato.
         </p>
 
         <p className="contrato-local">
+          E, por estarem assim justas e contratadas, as partes firmam o presente instrumento.
+          <br />
           Flatneck Station, New Hanover · Westfox · <strong>Anno MCMI</strong>
         </p>
       </div>
 
       <footer className="contrato-footer">
         {assinado ? (
-          <div className="contrato-assinado">
-            <div className="contrato-selo-ok">✓</div>
-            <div>
-              <strong>Contrato assinado</strong>
-              <div className="muted small">em {fmtDataLora(profile.contrato_assinado_em)}</div>
-              <div className="muted small" style={{ marginTop: 2, fontStyle: 'italic' }}>
-                Assinatura registrada: {profile.nome_completo}
+          <div className="contrato-assinado-bloco">
+            <div className="contrato-selo-aprovado">
+              <div className="contrato-selo-aprovado-borda">
+                <div className="contrato-selo-aprovado-texto">
+                  <span>Família</span>
+                  <strong>R</strong>
+                  <span>MCMI</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="contrato-assinado-conteudo">
+              <div className="contrato-assinatura-cursiva">
+                {profile.nome_completo}
+              </div>
+              <div className="contrato-assinatura-linha" />
+              <div className="contrato-assinado-print">
+                {profile.nome_completo} <span className="muted">·</span>{' '}
+                Identificação Nº {profile.identificacao}
+              </div>
+              <div className="contrato-assinado-meta">
+                Assinado eletronicamente em <strong>{fmtData1901(profile.contrato_assinado_em)}</strong>
+                {' '}às <strong>{fmtHora(profile.contrato_assinado_em)}</strong>.
+                <br />
+                Flatneck Station, New Hanover · Westfox.
               </div>
             </div>
           </div>
