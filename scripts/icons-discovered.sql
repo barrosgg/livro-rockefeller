@@ -1,7 +1,9 @@
 -- SQL gerado por discover-icons.sh
--- Slugs descobertos automaticamente em Fri May 22 15:02:39     2026
+-- Slugs descobertos automaticamente em Fri May 22 15:08:56     2026
 
 update products set icon = 'delapouite/chicken-oven' where nome = 'Ovo';
+update products set icon = 'delapouite/water-bottle' where nome = 'Leite';
+update products set icon = 'delapouite/jug' where nome = 'Coalhada';
 update products set icon = 'lorc/cheese-wedge' where nome = 'Queijo';
 update products set icon = 'lorc/cheese-wedge' where nome = 'Queijo de Cabra';
 update products set icon = 'lorc/cheese-wedge' where nome = 'Ricota';
@@ -14,6 +16,7 @@ update products set icon = 'lorc/cubes' where nome = 'Açúcar';
 update products set icon = 'delapouite/smoking-pipe' where nome = 'Tabaco';
 update products set icon = 'delapouite/wooden-crate' where nome = 'Fertilizante';
 update products set icon = 'delapouite/yarn' where nome = 'Giseng Americano';
+update products set icon = 'delapouite/yarn' where nome = 'Giseng-do-Alaska';
 update products set icon = 'delapouite/apple-core' where nome = 'Maçã';
 update products set icon = 'delapouite/banana' where nome = 'Banana';
 update products set icon = 'delapouite/peach' where nome = 'Pêssego';

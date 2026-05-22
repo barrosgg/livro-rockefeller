@@ -34,9 +34,9 @@ function Credencial({ profile, onEdit }) {
         <span className="corner bl" /><span className="corner br" />
 
         <header className="credencial-header">
+          <div className="credencial-emissao-top">Emitida em {formatarData(profile?.criado_em)}</div>
           <div className="credencial-numero">Nº {numero}</div>
-          <div className="credencial-titulo">Família Rockefeller</div>
-          <div className="credencial-subtitulo">Credencial do Caderno da Fazenda</div>
+          <img className="brand" src="/familia-rockefeller.png" alt="Família Rockefeller" />
         </header>
 
         <div className="credencial-body">
@@ -59,16 +59,11 @@ function Credencial({ profile, onEdit }) {
             </div>
 
             <div className="credencial-campo">
-              <span className="credencial-label">Discord</span>
-              <div className="credencial-valor">{profile?.discord_handle || <em className="empty">—</em>}</div>
-            </div>
-
-            <div className="credencial-campo">
               <span className="credencial-label">Conta Bancária</span>
               <div className="credencial-valor">{profile?.conta_bancaria || <em className="empty">—</em>}</div>
             </div>
 
-            <div className="credencial-campo">
+            <div className="credencial-campo full">
               <span className="credencial-label">Correio (PO Box)</span>
               <div className="credencial-valor">{profile?.correio || <em className="empty">não informado</em>}</div>
             </div>
@@ -76,13 +71,8 @@ function Credencial({ profile, onEdit }) {
         </div>
 
         <footer className="credencial-footer">
-          <div className="credencial-emissao">
-            Emitida em <strong>{formatarData(profile?.criado_em)}</strong>
-            <br />
-            Caderno da Fazenda Rockefeller · Anno MCM
-          </div>
-
           <div className="credencial-assinatura">
+            <div className="credencial-assinatura-nome">{profile?.nome_completo || '—'}</div>
             <div className="credencial-assinatura-linha" />
             <div className="credencial-assinatura-label">Assinatura do Trabalhador</div>
           </div>

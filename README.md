@@ -2,6 +2,8 @@
 
 Sistema de gestão de pedidos, produção e pagamentos da Fazenda Rockefeller (RDR2 roleplay) — sucessor da calculadora original [barrosgg/rockefeller](https://github.com/barrosgg/rockefeller).
 
+**Créditos de assets:** Os ícones de produto são por [Lorc](https://lorcblog.blogspot.com/) e [Delapouite](https://delapouite.com/), distribuídos via [game-icons.net](https://game-icons.net) sob licença [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
 **Stack:** React + Vite · Supabase (Postgres + Auth Discord + RLS) · hospedagem estática gratuita (Cloudflare Pages / Vercel / Netlify).
 
 ---

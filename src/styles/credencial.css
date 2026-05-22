@@ -55,38 +55,36 @@
 
 .credencial > * { position: relative; z-index: 1; }
 
-/* Cabeçalho */
+/* Cabeçalho com logo */
 .credencial-header {
   text-align: center;
-  padding-bottom: 14px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--gold);
   position: relative;
 }
-.credencial-titulo {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: .22em;
-  color: var(--ink);
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-.credencial-subtitulo {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: .82rem;
-  color: var(--ink-mute);
-  margin-top: 4px;
-  letter-spacing: .08em;
+.credencial-header img.brand {
+  display: block;
+  margin: 0 auto;
+  max-width: 280px;
+  height: auto;
+  max-height: 78px;
 }
 .credencial-numero {
   position: absolute;
-  top: -2px; right: 0;
+  top: 2px; right: 0;
   font-family: 'Lora', serif;
-  font-size: .68rem;
-  letter-spacing: .14em;
+  font-size: .7rem;
+  letter-spacing: .16em;
   color: var(--ink-mute);
   text-transform: uppercase;
+}
+.credencial-emissao-top {
+  position: absolute;
+  top: 2px; left: 0;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .7rem;
+  color: var(--ink-mute);
 }
 
 /* Corpo: avatar à esquerda, dados à direita */
@@ -233,22 +231,35 @@
   text-transform: uppercase;
 }
 
-/* Linha de assinatura */
+/* Linha de assinatura — fonte cursiva gerada do nome */
 .credencial-assinatura {
   flex: 1;
-  min-width: 200px;
+  min-width: 220px;
   text-align: center;
+  position: relative;
+}
+.credencial-assinatura-nome {
+  font-family: 'Great Vibes', 'Allison', cursive;
+  font-size: 2rem;
+  color: var(--ink);
+  line-height: 1;
+  transform: rotate(-3deg);
+  display: inline-block;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  opacity: .9;
 }
 .credencial-assinatura-linha {
   border-top: 1px solid var(--ink-soft);
   height: 1px;
-  margin-bottom: 4px;
+  margin: 0 12px 4px;
 }
 .credencial-assinatura-label {
   font-family: 'Lora', serif;
-  font-size: .7rem;
+  font-size: .68rem;
   font-style: italic;
   color: var(--ink-mute);
+  letter-spacing: .04em;
 }
 
 /* Mobile */
