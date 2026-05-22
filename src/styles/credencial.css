@@ -11,7 +11,23 @@
 .credencial {
   width: 100%;
   max-width: 760px;
+  /* Camadas: linhas horizontais + ondas guilloché + grão SVG + base */
   background:
+    /* linhas horizontais finas (papel pautado de cédula) */
+    repeating-linear-gradient(0deg,
+      transparent 0,
+      transparent 10px,
+      rgba(110, 86, 22, .055) 10px,
+      rgba(110, 86, 22, .055) 11px),
+    /* diagonal sutil */
+    repeating-linear-gradient(135deg,
+      transparent 0,
+      transparent 13px,
+      rgba(110, 86, 22, .035) 13px,
+      rgba(110, 86, 22, .035) 14px),
+    /* grão de papel via SVG noise */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    /* gradiente base cream */
     linear-gradient(135deg, #fdf9ed 0%, #f5ecd0 100%);
   border-radius: 8px;
   position: relative;
@@ -22,6 +38,22 @@
     inset 0 0 0 6px var(--paper),
     inset 0 0 0 7px var(--gold-deep);
   padding: 36px 40px 30px;
+}
+
+/* Ornamento guilloché — círculos concêntricos finíssimos atrás (estilo cédula) */
+.credencial::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 90%; height: 110%;
+  transform: translate(-50%, -50%);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'><g fill='none' stroke='%236e5616' stroke-width='0.4' opacity='0.18'><ellipse cx='200' cy='200' rx='180' ry='150'/><ellipse cx='200' cy='200' rx='160' ry='130'/><ellipse cx='200' cy='200' rx='140' ry='110'/><ellipse cx='200' cy='200' rx='120' ry='90'/><ellipse cx='200' cy='200' rx='100' ry='70'/></g></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  pointer-events: none;
+  opacity: .6;
+  z-index: 0;
 }
 
 /* Marca d'água do brasão atrás de tudo */
@@ -65,9 +97,9 @@
 .credencial-header img.brand {
   display: block;
   margin: 0 auto;
-  max-width: 280px;
+  max-width: 240px;
   height: auto;
-  max-height: 78px;
+  max-height: 68px;
 }
 .credencial-empresa {
   margin-top: 8px;
@@ -160,13 +192,13 @@
   font-family: 'Playfair Display', serif;
   font-size: .82rem;
   letter-spacing: .22em;
-  color: var(--gold-deep);
+  color: var(--ink);
   text-transform: uppercase;
-  font-weight: 600;
-  padding: 4px 14px;
-  border-top: 1px solid var(--gold);
-  border-bottom: 1px solid var(--gold);
-  background: rgba(176,141,61,.05);
+  font-weight: 700;
+  padding: 5px 16px;
+  border-top: 1px solid var(--gold-deep);
+  border-bottom: 1px solid var(--gold-deep);
+  background: rgba(176,141,61,.1);
 }
 
 /* Grid de campos */
