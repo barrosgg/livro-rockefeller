@@ -98,7 +98,7 @@ export default function PedidoDetalhe() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [param]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
