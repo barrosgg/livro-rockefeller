@@ -275,8 +275,31 @@ table.book .num, .num {
   font-variant-numeric: tabular-nums;
 }
 
-/* Inputs numéricos dentro de células .num — alinhamento perfeito com o cabeçalho */
-table.book td.num input { text-align: right; }
+/* Inputs numéricos dentro de células .num —
+   borderless por padrão (parecem texto), border + bg só no hover/focus.
+   Isso elimina o "padding interno do input" que desalinhava o número em
+   relação ao cabeçalho. */
+table.book td.num input {
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: right;
+  padding: 4px 4px;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 2px;
+}
+table.book td.num input:hover {
+  background: rgba(255,255,255,.7);
+  border-color: var(--paper-edge);
+}
+table.book td.num input:focus-visible {
+  background: #fff;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(176,141,61,.15);
+  outline: none;
+}
 
 /* ---------- Badges ---------- */
 .badge {
