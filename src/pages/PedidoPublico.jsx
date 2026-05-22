@@ -144,7 +144,6 @@ export default function PedidoPublico() {
                     <Avatar slug={c.trabalhador?.avatar} name={c.trabalhador?.nome_completo} size={40} />
                     <div>
                       <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
-                      <div className="muted small">Discord: {c.trabalhador?.discord_handle}</div>
                     </div>
                   </div>
                   <span className={`badge ${c.status}`}>{statusLabel(c.status)}</span>
