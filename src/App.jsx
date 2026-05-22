@@ -9,6 +9,7 @@ import MeusTrabalhos from './pages/MeusTrabalhos.jsx';
 import Admin from './pages/Admin.jsx';
 import PedidoPublico from './pages/PedidoPublico.jsx';
 import Logo from './components/Logo.jsx';
+import Avatar from './components/Avatar.jsx';
 
 function Topbar() {
   const { profile, signOut } = useAuth();
@@ -27,6 +28,7 @@ function Topbar() {
         {profile?.role === 'proprietario' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin</NavLink>}
       </nav>
       <div className="user">
+        <Avatar slug={profile?.avatar} name={profile?.nome_completo || profile?.discord_handle} size={32} />
         <span className="name">{profile?.nome_completo || profile?.discord_handle || '...'}</span>
         {profile?.role && <span className={`badge ${profile.role}`}>{profile.role}</span>}
         <button className="btn ghost sm" onClick={signOut}>Sair</button>

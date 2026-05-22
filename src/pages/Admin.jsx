@@ -4,6 +4,7 @@ import { useSettings, useCategorias } from '../lib/settings.jsx';
 import { useAuth } from '../lib/auth.jsx';
 import { fmt, statusLabel } from '../lib/calc.js';
 import { toCsv, downloadCsv } from '../lib/csv.js';
+import Avatar from '../components/Avatar.jsx';
 
 const ROLES = ['proprietario', 'gerente', 'trabalhador'];
 
@@ -74,7 +75,12 @@ function UsuariosTab() {
         <tbody>
           {profiles.map(p => (
             <tr key={p.id} style={{ opacity: p.disabled ? 0.55 : 1 }}>
-              <td>{p.nome_completo || <span className="muted">—</span>}</td>
+              <td>
+                <div className="flex gap-1 center-y">
+                  <Avatar slug={p.avatar} name={p.nome_completo} size={28} />
+                  <span>{p.nome_completo || <span className="muted">—</span>}</span>
+                </div>
+              </td>
               <td>{p.discord_handle || <span className="muted">—</span>}</td>
               <td>{p.identificacao || <span className="muted">—</span>}</td>
               <td>{p.conta_bancaria || <span className="muted">—</span>}</td>

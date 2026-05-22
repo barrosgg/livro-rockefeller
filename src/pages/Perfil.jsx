@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, isProfileComplete } from '../lib/auth.jsx';
 import { supabase } from '../lib/supabase.js';
+import Avatar from '../components/Avatar.jsx';
+import AvatarPicker from '../components/AvatarPicker.jsx';
 
 export default function Perfil() {
   const { profile, refreshProfile, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    nome_completo: '', identificacao: '', discord_handle: '', conta_bancaria: '',
+    nome_completo: '', identificacao: '', discord_handle: '', conta_bancaria: '', avatar: null,
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -19,6 +22,7 @@ export default function Perfil() {
         identificacao: profile.identificacao || '',
         discord_handle: profile.discord_handle || '',
         conta_bancaria: profile.conta_bancaria || '',
+        avatar: profile.avatar || null,
       });
     }
   }, [profile]);
@@ -33,7 +37,6 @@ export default function Perfil() {
     if (error) { setMsg({ type: 'err', text: error.message }); return; }
     setMsg({ type: 'ok', text: 'Perfil salvo.' });
     await refreshProfile();
-    // Se era o primeiro preenchimento, redireciona para a lista de pedidos
     if (!isProfileComplete(profile)) {
       navigate('/pedidos', { replace: true });
     }
@@ -46,31 +49,60 @@ export default function Perfil() {
         <span className={`badge ${profile?.role}`}>{profile?.role}</span>
       </div>
       <p className="muted">Mantenha seus dados atualizados — são usados para pagamento e identificação.</p>
-      <div className="divider" />
-      <form onSubmit={submit} className="row">
-        <div style={{ minWidth: 300 }}>
-          <div className="field">
-            <label>Nome completo</label>
-            <input type="text" required value={form.nome_completo} onChange={set('nome_completo')} />
-          </div>
-          <div className="field">
-            <label>Identificação</label>
-            <input type="text" required value={form.identificacao} onChange={set('identificacao')} placeholder="RG / passaporte / ID do personagem" />
-          </div>
-        </div>
-        <div style={{ minWidth: 300 }}>
-          <div className="field">
-            <label>Handle do Discord</label>
-            <input type="text" required value={form.discord_handle} onChange={set('discord_handle')} placeholder="usuario#0000 ou @usuario" />
-          </div>
-          <div className="field">
-            <label>Conta bancária</label>
-            <input type="text" required value={form.conta_bancaria} onChange={set('conta_bancaria')} placeholder="Número da conta para pagamento" />
+      <hr className="divider" />
+
+      <form onSubmit={submit}>
+        {/* Avatar */}
+        <div className="flex gap-2 center-y" style={{ marginBottom: 18 }}>
+          <Avatar slug={form.avatar} name={form.nome_completo} size={72} />
+          <div>
+            <div className="muted small" style={{ fontWeight: 600, letterSpacing: 0 }}>SEU PERSONAGEM</div>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.1rem' }}>
+              {form.avatar
+                ? <em>{(form.avatar.charAt(0).toUpperCase() + form.avatar.slice(1)).replace('-', ' ')}</em>
+                : <span className="muted it">Nenhum selecionado</span>}
+            </div>
+            <button type="button" className="btn ghost sm" style={{ marginTop: 6 }}
+              onClick={() => setPickerOpen(o => !o)}>
+              {pickerOpen ? 'Fechar' : (form.avatar ? 'Trocar avatar' : 'Escolher avatar')}
+            </button>
           </div>
         </div>
-        <div style={{ flexBasis: '100%' }}>
+
+        {pickerOpen && (
+          <div className="card" style={{ marginBottom: 18 }}>
+            <AvatarPicker value={form.avatar} onChange={(slug) => {
+              setForm(f => ({ ...f, avatar: slug }));
+              setPickerOpen(false);
+            }} />
+          </div>
+        )}
+
+        <div className="row">
+          <div style={{ minWidth: 300, flex: 1 }}>
+            <div className="field">
+              <label>Nome completo</label>
+              <input type="text" required value={form.nome_completo} onChange={set('nome_completo')} />
+            </div>
+            <div className="field">
+              <label>Identificação</label>
+              <input type="text" required value={form.identificacao} onChange={set('identificacao')} placeholder="RG / passaporte / ID do personagem" />
+            </div>
+          </div>
+          <div style={{ minWidth: 300, flex: 1 }}>
+            <div className="field">
+              <label>Handle do Discord</label>
+              <input type="text" required value={form.discord_handle} onChange={set('discord_handle')} placeholder="usuario#0000 ou @usuario" />
+            </div>
+            <div className="field">
+              <label>Conta bancária</label>
+              <input type="text" required value={form.conta_bancaria} onChange={set('conta_bancaria')} placeholder="Número da conta para pagamento" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-2">
           <button className="btn" disabled={saving}>{saving ? 'Salvando…' : 'Salvar Perfil'}</button>
-          {msg && <span className="muted" style={{ marginLeft: 12, color: msg.type === 'err' ? '#7a1f15' : 'inherit' }}>{msg.text}</span>}
+          {msg && <span className="muted" style={{ marginLeft: 12, color: msg.type === 'err' ? 'var(--burgundy)' : 'inherit' }}>{msg.text}</span>}
         </div>
       </form>
     </div>

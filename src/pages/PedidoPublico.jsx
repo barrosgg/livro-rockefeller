@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { fmt, statusLabel, totalPedido } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
+import Avatar from '../components/Avatar.jsx';
 
 export default function PedidoPublico() {
   const { token } = useParams();
@@ -130,9 +131,12 @@ export default function PedidoPublico() {
             {claims.map((c, i) => (
               <div key={i} className="card">
                 <div className="flex between center-y wrap">
-                  <div>
-                    <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
-                    <div className="muted small">Discord: {c.trabalhador?.discord_handle}</div>
+                  <div className="flex gap-2 center-y">
+                    <Avatar slug={c.trabalhador?.avatar} name={c.trabalhador?.nome_completo} size={40} />
+                    <div>
+                      <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
+                      <div className="muted small">Discord: {c.trabalhador?.discord_handle}</div>
+                    </div>
                   </div>
                   <span className={`badge ${c.status}`}>{statusLabel(c.status)}</span>
                 </div>

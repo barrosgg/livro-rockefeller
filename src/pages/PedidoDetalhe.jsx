@@ -6,6 +6,7 @@ import { useLocalStorage } from '../lib/storage.js';
 import { useCommissionPct, useWorkerPct } from '../lib/settings.jsx';
 import { fmt, totalPedido, statusLabel } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
+import Avatar from '../components/Avatar.jsx';
 
 function Toast({ message, type='ok', onClose }) {
   useEffect(() => {
@@ -401,10 +402,13 @@ export default function PedidoDetalhe() {
             return (
               <div key={c.id} className="card">
                 <div className="flex between center-y wrap gap-2">
-                  <div>
-                    <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
-                    <div className="muted small">
-                      ID {c.trabalhador?.identificacao} · Discord {c.trabalhador?.discord_handle} · Conta {c.trabalhador?.conta_bancaria}
+                  <div className="flex gap-2 center-y">
+                    <Avatar slug={c.trabalhador?.avatar} name={c.trabalhador?.nome_completo} size={44} />
+                    <div>
+                      <strong>{c.trabalhador?.nome_completo || c.trabalhador?.discord_handle}</strong>
+                      <div className="muted small">
+                        ID {c.trabalhador?.identificacao} · Discord {c.trabalhador?.discord_handle} · Conta {c.trabalhador?.conta_bancaria}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-1 center-y wrap">
