@@ -81,8 +81,9 @@ function Layout() {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">Pular para o conteúdo</a>
       <Topbar />
-      <main className="shell"><Outlet /></main>
+      <main id="main-content" className="shell"><Outlet /></main>
       {mostrarOnboarding && (
         <Onboarding
           profile={profile}

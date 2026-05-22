@@ -7,6 +7,8 @@ import { fmt, clamp } from '../lib/calc.js';
 import { useUI } from '../lib/ui.jsx';
 import ProdutoCombo from '../components/ProdutoCombo.jsx';
 import ProductIcon from '../components/ProductIcon.jsx';
+import { useCategorias } from '../lib/settings.jsx';
+import { useFocusTrap } from '../lib/a11y.js';
 
 function novoNumero() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
@@ -38,6 +40,7 @@ export default function NovoPedido() {
   const [qtd, setQtd] = useState(50);
   const [salvarTplOpen, setSalvarTplOpen] = useState(false);
   const [tplNome, setTplNome] = useState('');
+  const [novoProdutoOpen, setNovoProdutoOpen] = useState(false);
 
   const [draft, setDraft, limparDraft] = useLocalStorage('draft:pedido:novo', () => ({
     itens: [], cliente: '', anotacoes: '', descontoPct: 0, prazo: '', numero: novoNumero(),
@@ -298,7 +301,14 @@ export default function NovoPedido() {
       <div className="card" style={{ background: '#fff', padding: '14px 16px' }}>
         <div className="flex gap-2 wrap" style={{ alignItems: 'flex-end' }}>
           <div className="field" style={{ flex: '2 1 320px', marginBottom: 0 }}>
-            <label>Produto</label>
+            <label className="flex between center-y">
+              <span>Produto</span>
+              <button type="button" className="btn ghost sm"
+                style={{ padding: '2px 8px', fontSize: '.7rem' }}
+                onClick={() => setNovoProdutoOpen(true)}>
+                + Criar novo
+              </button>
+            </label>
             <ProdutoCombo
               ref={comboRef}
               produtos={produtos}
@@ -467,6 +477,121 @@ export default function NovoPedido() {
             </button>
           </div>
         </div>
+      </div>
+
+      {novoProdutoOpen && (
+        <NovoProdutoModal
+          onClose={() => setNovoProdutoOpen(false)}
+          onCreated={async (criado) => {
+            // Atualiza catálogo local e seleciona o recém-criado
+            const { data } = await supabase.from('products').select('*').order('nome');
+            setProdutos(data || []);
+            const novoComp = (data || []).find(p => p.id === criado.id) || criado;
+            setSelProd(novoComp);
+            setNovoProdutoOpen(false);
+            showToast?.(`Produto "${criado.nome}" adicionado.`, { type: 'success' });
+            setTimeout(() => qtdRef.current?.select(), 100);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ---------- Modal: criar produto inline ---------- */
+function NovoProdutoModal({ onClose, onCreated }) {
+  const categorias = useCategorias();
+  const modalRef = useFocusTrap(true);
+  const [form, setForm] = useState({
+    nome: '', categoria: '', preco_min: '', preco_max: '', icon: '',
+  });
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    if (!form.categoria && categorias.length) {
+      setForm(f => ({ ...f, categoria: categorias[0] }));
+    }
+  }, [categorias, form.categoria]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setErro(null);
+    const nome = form.nome.trim();
+    const pmin = Number(form.preco_min);
+    const pmax = Number(form.preco_max);
+    if (!nome) { setErro('Nome do produto é obrigatório.'); return; }
+    if (isNaN(pmin) || pmin <= 0 || isNaN(pmax) || pmax < pmin) {
+      setErro('Preço inválido (mínimo > 0 e máximo ≥ mínimo).');
+      return;
+    }
+    setSalvando(true);
+    const { data, error } = await supabase.from('products').insert({
+      nome, categoria: form.categoria,
+      preco_min: pmin, preco_max: pmax,
+      icon: form.icon.trim() || null,
+    }).select().single();
+    setSalvando(false);
+    if (error) { setErro(error.message); return; }
+    onCreated(data);
+  };
+
+  return (
+    <div className="confirm-backdrop" role="dialog" aria-modal="true" aria-labelledby="novo-prod-title"
+         onClick={onClose}>
+      <div className="confirm-modal" ref={modalRef} onClick={e => e.stopPropagation()}
+           style={{ maxWidth: 540 }}>
+        <h3 id="novo-prod-title" className="mt-0">Criar Novo Produto</h3>
+        <form onSubmit={submit}>
+          <div className="field">
+            <label htmlFor="np-nome">Nome</label>
+            <input id="np-nome" type="text" autoFocus required value={form.nome} onChange={set('nome')} />
+          </div>
+          <div className="row">
+            <div className="field" style={{ flex: '1 1 220px' }}>
+              <label htmlFor="np-cat">Categoria</label>
+              <select id="np-cat" value={form.categoria} onChange={set('categoria')}>
+                {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="field" style={{ flex: '0 0 110px' }}>
+              <label htmlFor="np-min">Preço mín.</label>
+              <input id="np-min" type="number" step="0.01" min="0" required
+                value={form.preco_min} onChange={set('preco_min')} style={{ textAlign: 'right' }} />
+            </div>
+            <div className="field" style={{ flex: '0 0 110px' }}>
+              <label htmlFor="np-max">Preço máx.</label>
+              <input id="np-max" type="number" step="0.01" min="0" required
+                value={form.preco_max} onChange={set('preco_max')} style={{ textAlign: 'right' }} />
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="np-icon">
+              Ícone{' '}
+              <a href="https://game-icons.net" target="_blank" rel="noopener noreferrer"
+                 style={{ fontSize: '.7rem', marginLeft: 4 }}>buscar →</a>
+            </label>
+            <input id="np-icon" type="text" placeholder="ex: delapouite/corn (opcional)"
+              value={form.icon} onChange={set('icon')} />
+          </div>
+          {erro && <p style={{ color: 'var(--burgundy)' }} className="small">{erro}</p>}
+          <div className="flex gap-1 mt-2" style={{ justifyContent: 'flex-end' }}>
+            <button type="button" className="btn ghost" onClick={onClose} disabled={salvando}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn" disabled={salvando}>
+              {salvando ? 'Criando…' : 'Criar e Selecionar'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

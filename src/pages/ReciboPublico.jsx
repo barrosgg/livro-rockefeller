@@ -34,10 +34,29 @@ export default function ReciboPublico() {
 
   useEffect(() => {
     let alive = true;
+    const cacheKey = `recibo:${code}`;
+
+    // Tenta cache local (sessionStorage) primeiro para render instantâneo
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setData(JSON.parse(cached));
+        setLoading(false);
+      }
+    } catch {}
+
+    // Re-busca em background para garantir dados atualizados
     supabase.rpc('get_recibo_public', { p_code: code }).then(({ data, error }) => {
       if (!alive) return;
-      if (error) { setErro(error.message); setLoading(false); return; }
-      setData(data); setLoading(false);
+      if (error) {
+        // Se cache existia, mantém. Só mostra erro se não havia nada.
+        setErro(prev => prev || (sessionStorage.getItem(cacheKey) ? null : error.message));
+        setLoading(false);
+        return;
+      }
+      setData(data);
+      setLoading(false);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
     });
     return () => { alive = false; };
   }, [code]);

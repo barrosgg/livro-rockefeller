@@ -263,7 +263,7 @@ function ProdutosTab() {
       </div>
 
       <h3 className="mt-3">{produtos.length} produtos no catálogo</h3>
-      <table className="book">
+      <table className="book responsive" aria-label="Catálogo de produtos">
         <colgroup>
           <col style={{ width: 50 }} /><col /><col style={{ width: 200 }} /><col style={{ width: 120 }} /><col style={{ width: 120 }} /><col style={{ width: 180 }} /><col style={{ width: 140 }} />
         </colgroup>
@@ -275,30 +275,30 @@ function ProdutosTab() {
             const editing = editId === p.id;
             return (
               <tr key={p.id}>
-                <td><ProductIcon slug={p.icon} name={p.nome} size={24} /></td>
-                <td>{p.nome}</td>
-                <td>
+                <td data-label=""><ProductIcon slug={p.icon} name={p.nome} size={24} /></td>
+                <td data-label="Nome">{p.nome}</td>
+                <td data-label="Categoria">
                   {editing ? (
                     <select value={editVals.categoria} onChange={e => setEditVals({ ...editVals, categoria: e.target.value })}>
                       {categorias.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   ) : <span className="muted small">{p.categoria}</span>}
                 </td>
-                <td className="num">{editing
+                <td className="num" data-label="Preço mín.">{editing
                   ? <input type="number" step="0.01" value={editVals.preco_min}
                       onChange={e => setEditVals({ ...editVals, preco_min: e.target.value })} />
                   : fmt(p.preco_min)}</td>
-                <td className="num">{editing
+                <td className="num" data-label="Preço máx.">{editing
                   ? <input type="number" step="0.01" value={editVals.preco_max}
                       onChange={e => setEditVals({ ...editVals, preco_max: e.target.value })} />
                   : fmt(p.preco_max)}</td>
-                <td>
+                <td data-label="Ícone">
                   {editing
                     ? <input type="text" value={editVals.icon || ''} placeholder="autor/icon"
                         onChange={e => setEditVals({ ...editVals, icon: e.target.value })} />
                     : <span className="muted small">{p.icon || '—'}</span>}
                 </td>
-                <td>
+                <td data-label="">
                   {editing ? (
                     <div className="flex gap-1">
                       <button className="btn sm" onClick={() => salvarEdit(p.id)}>salvar</button>

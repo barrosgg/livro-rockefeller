@@ -16,8 +16,19 @@ export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [filtro, setFiltro] = useLocalStorage('pedidos:filtro', 'todos');
   const [busca, setBusca] = useLocalStorage('pedidos:busca', '');
+  const [ordem, setOrdem] = useLocalStorage('pedidos:ordem', { campo: 'criado_em', dir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [selecionados, setSelecionados] = useState(new Set());
+
+  const trocarOrdem = (campo) => {
+    setOrdem(o => o.campo === campo
+      ? { campo, dir: o.dir === 'asc' ? 'desc' : 'asc' }
+      : { campo, dir: 'asc' });
+  };
+  const setaOrdem = (campo) => {
+    if (ordem.campo !== campo) return '';
+    return ordem.dir === 'asc' ? ' ↑' : ' ↓';
+  };
 
   const carregar = async () => {
     setLoading(true);
@@ -38,7 +49,7 @@ export default function Pedidos() {
   }, [pedidos]);
 
   const lista = useMemo(() => {
-    let arr = pedidos;
+    let arr = [...pedidos];
     if (filtro !== 'todos') arr = arr.filter(p => p.status === filtro);
     if (busca.trim()) {
       const q = busca.toLowerCase();
@@ -48,8 +59,18 @@ export default function Pedidos() {
         (p.short_code || '').toLowerCase().includes(q)
       );
     }
+    // Ordenacao
+    const fator = ordem.dir === 'asc' ? 1 : -1;
+    arr.sort((a, b) => {
+      const va = a[ordem.campo] ?? '';
+      const vb = b[ordem.campo] ?? '';
+      if (typeof va === 'string' && typeof vb === 'string') {
+        return fator * va.localeCompare(vb, 'pt-BR');
+      }
+      return fator * ((va > vb ? 1 : va < vb ? -1 : 0));
+    });
     return arr;
-  }, [pedidos, filtro, busca]);
+  }, [pedidos, filtro, busca, ordem]);
 
   const toggleSel = (id) => {
     setSelecionados(s => {
@@ -173,11 +194,26 @@ export default function Pedidos() {
                     onChange={toggleAll} />
                 </th>
               )}
-              <th style={{ width: 90 }}>Nº Nota</th>
-              <th>Cliente</th>
-              <th style={{ width: 140 }}>Status</th>
-              <th style={{ width: 170 }}>Prazo</th>
-              <th style={{ width: 130 }}>Criado</th>
+              <th style={{ width: 90, cursor: 'pointer' }} onClick={() => trocarOrdem('numero_nota')}
+                  aria-sort={ordem.campo === 'numero_nota' ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                Nº Nota{setaOrdem('numero_nota')}
+              </th>
+              <th style={{ cursor: 'pointer' }} onClick={() => trocarOrdem('cliente')}
+                  aria-sort={ordem.campo === 'cliente' ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                Cliente{setaOrdem('cliente')}
+              </th>
+              <th style={{ width: 140, cursor: 'pointer' }} onClick={() => trocarOrdem('status')}
+                  aria-sort={ordem.campo === 'status' ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                Status{setaOrdem('status')}
+              </th>
+              <th style={{ width: 170, cursor: 'pointer' }} onClick={() => trocarOrdem('prazo_entrega')}
+                  aria-sort={ordem.campo === 'prazo_entrega' ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                Prazo{setaOrdem('prazo_entrega')}
+              </th>
+              <th style={{ width: 130, cursor: 'pointer' }} onClick={() => trocarOrdem('criado_em')}
+                  aria-sort={ordem.campo === 'criado_em' ? (ordem.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                Criado{setaOrdem('criado_em')}
+              </th>
               <th style={{ width: 70 }}></th>
             </tr>
           </thead>
