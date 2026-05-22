@@ -13,7 +13,7 @@ async function carregarStats(userId, workerPct) {
       .select('trabalhador_id, items:claim_items(quantidade, order_item:order_items(preco_unit))')
       .eq('status', 'pago'),
     supabase.from('profiles')
-      .select('criado_em')
+      .select('criado_em, badges_extras')
       .eq('id', userId)
       .maybeSingle(),
   ]);
@@ -56,6 +56,7 @@ async function carregarStats(userId, workerPct) {
     entregas_no_prazo: entregasNoPrazo,
     posicao_ranking,
     dias_desde_inicio,
+    badges_extras: profile?.badges_extras || [],
   };
 }
 
@@ -72,8 +73,10 @@ export default function Conquistas({ userId }) {
     return <div className="card"><p className="muted it small mt-0">Calculando suas conquistas…</p></div>;
   }
 
-  const conquistadas = BADGES.filter(b => b.check(stats));
-  const pendentes = BADGES.filter(b => !b.check(stats));
+  const extras = stats.badges_extras || [];
+  const desbloqueada = (b) => b.check(stats) || extras.includes(b.id);
+  const conquistadas = BADGES.filter(desbloqueada);
+  const pendentes = BADGES.filter(b => !desbloqueada(b));
 
   return (
     <div>
