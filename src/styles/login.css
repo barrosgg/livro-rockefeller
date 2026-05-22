@@ -42,11 +42,10 @@
   }
 }
 
-/* Respeita preferência do usuário por menos movimento */
+/* Reduced-motion: animação ainda roda, mas mais lenta e com menos amplitude */
 @media (prefers-reduced-motion: reduce) {
   .login-bg-img {
-    animation: none;
-    transform: scale(1.04);
+    animation-duration: 60s;
   }
 }
 
