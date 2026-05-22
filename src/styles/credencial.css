@@ -65,14 +65,12 @@
 .credencial {
   width: 100%;
   max-width: 760px;
-  /* Camadas: ondas guilloché horizontais + ondas verticais + grão + base */
+  /* Camadas: ondas curvas suaves + grão sutil + base */
   background:
-    /* Ondas senoidais horizontais (4 linhas onduladas por tile) */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='44'><g fill='none' stroke='%236e5616' stroke-width='0.5' opacity='0.28'><path d='M0 8 Q27.5 -2 55 8 T110 8 T165 8 T220 8'/><path d='M0 19 Q27.5 9 55 19 T110 19 T165 19 T220 19'/><path d='M0 30 Q27.5 20 55 30 T110 30 T165 30 T220 30'/><path d='M0 41 Q27.5 31 55 41 T110 41 T165 41 T220 41'/></g></svg>"),
-    /* Ondas verticais cruzadas (cria padrão guilloché entrelaçado) */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='220'><g fill='none' stroke='%236e5616' stroke-width='0.4' opacity='0.15'><path d='M8 0 Q-2 27.5 8 55 T8 110 T8 165 T8 220'/><path d='M19 0 Q9 27.5 19 55 T19 110 T19 165 T19 220'/><path d='M30 0 Q20 27.5 30 55 T30 110 T30 165 T30 220'/><path d='M41 0 Q31 27.5 41 55 T41 110 T41 165 T41 220'/></g></svg>"),
+    /* Ondas senoidais horizontais — bem suaves */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='44'><g fill='none' stroke='%236e5616' stroke-width='0.4' opacity='0.13'><path d='M0 8 Q27.5 -2 55 8 T110 8 T165 8 T220 8'/><path d='M0 19 Q27.5 9 55 19 T110 19 T165 19 T220 19'/><path d='M0 30 Q27.5 20 55 30 T110 30 T165 30 T220 30'/><path d='M0 41 Q27.5 31 55 41 T110 41 T165 41 T220 41'/></g></svg>"),
     /* Grão de papel via SVG noise */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
     /* Gradiente base cream */
     linear-gradient(135deg, #fdf9ed 0%, #f5ecd0 100%);
   border-radius: 8px;
@@ -84,22 +82,6 @@
     inset 0 0 0 6px var(--paper),
     inset 0 0 0 7px var(--gold-deep);
   padding: 36px 40px 30px;
-}
-
-/* Ornamento guilloché central — rosácea de curvas (rosette) estilo cédula */
-.credencial::after {
-  content: "";
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 320px; height: 320px;
-  transform: translate(-50%, -50%);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%236e5616' stroke-width='0.5' opacity='0.22'><circle cx='100' cy='100' r='85'/><circle cx='100' cy='100' r='75' transform='rotate(15 100 100)'/><ellipse cx='100' cy='100' rx='85' ry='40'/><ellipse cx='100' cy='100' rx='85' ry='40' transform='rotate(30 100 100)'/><ellipse cx='100' cy='100' rx='85' ry='40' transform='rotate(60 100 100)'/><ellipse cx='100' cy='100' rx='85' ry='40' transform='rotate(90 100 100)'/><ellipse cx='100' cy='100' rx='85' ry='40' transform='rotate(120 100 100)'/><ellipse cx='100' cy='100' rx='85' ry='40' transform='rotate(150 100 100)'/></g></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  pointer-events: none;
-  opacity: .55;
-  z-index: 0;
 }
 
 /* Marca d'água do brasão atrás de tudo */
