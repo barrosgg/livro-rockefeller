@@ -214,18 +214,21 @@ export default function NovoPedido() {
             />
             {selProd && <div className="hint">{selProd.categoria} · {fmt(selProd.preco_min)}–{fmt(selProd.preco_max)}</div>}
           </div>
-          <div className="field" style={{ flex: '0 0 130px', marginBottom: 0 }}>
+          <div className="field" style={{ flex: '0 0 110px', marginBottom: 0 }}>
             <label>Quantidade</label>
             <input ref={qtdRef} type="number" min="1" value={qtd}
+              style={{ textAlign: 'right' }}
               onChange={(e) => setQtd(Number(e.target.value) || 0)}
               onKeyDown={onQtdKey} />
           </div>
-          <div className="flex gap-1 wrap" style={{ marginBottom: 2 }}>
+          <div className="flex gap-1 wrap" style={{ marginBottom: 1, alignSelf: 'flex-end' }}>
             {QTD_PRESETS.map(n => (
-              <button key={n} type="button" className="btn ghost sm" onClick={() => setQtd(n)}>{n}</button>
+              <button key={n} type="button" className="btn ghost sm"
+                style={{ minWidth: 44, padding: '6px 10px' }}
+                onClick={() => setQtd(n)}>{n}</button>
             ))}
           </div>
-          <button className="btn" disabled={!selProd || qtd <= 0} onClick={() => adicionar()}>
+          <button className="btn lg" disabled={!selProd || qtd <= 0} onClick={() => adicionar()}>
             Adicionar
           </button>
         </div>
@@ -238,14 +241,21 @@ export default function NovoPedido() {
           Nenhum item ainda. Pressione <Kbd>/</Kbd> para buscar.
         </p></div>
       ) : (
-        <table className="book">
+        <table className="book" style={{ tableLayout: 'fixed' }}>
+          <colgroup>
+            <col />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 130 }} />
+            <col style={{ width: 120 }} />
+            <col style={{ width: 50 }} />
+          </colgroup>
           <thead>
             <tr>
               <th>Produto</th>
-              <th className="num" style={{ width: 100 }}>Qtd</th>
-              <th className="num" style={{ width: 130 }}>Preço unit.</th>
-              <th className="num" style={{ width: 100 }}>Subtotal</th>
-              <th style={{ width: 50 }}></th>
+              <th className="num">Qtd</th>
+              <th className="num">Preço unit.</th>
+              <th className="num">Subtotal</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -258,17 +268,24 @@ export default function NovoPedido() {
                     <div className="muted small">{it.product.categoria}</div>
                   </td>
                   <td className="num">
-                    <input type="number" min="1" value={it.quantidade} style={{ width: 80, textAlign: 'right' }}
+                    <input type="number" min="1" value={it.quantidade}
+                      style={{ width: '100%', textAlign: 'right' }}
                       onChange={e => setItem(i, { quantidade: Math.max(1, Number(e.target.value) || 0) })} />
                   </td>
                   <td className="num">
                     <input type="number" step="0.01" min={it.product.preco_min} max={it.product.preco_max}
-                      value={it.preco_unit} style={{ width: 90, textAlign: 'right' }}
+                      value={it.preco_unit} style={{ width: '100%', textAlign: 'right' }}
                       onChange={e => setItem(i, { preco_unit: clamp(Number(e.target.value) || 0, it.product.preco_min, it.product.preco_max) })} />
-                    <div className="muted small" style={{ fontSize: '.7rem' }}>{fmt(it.product.preco_min)}–{fmt(it.product.preco_max)}</div>
+                    <div className="muted" style={{ fontSize: '.7rem', textAlign: 'right', marginTop: 2 }}>
+                      {fmt(it.product.preco_min)} – {fmt(it.product.preco_max)}
+                    </div>
                   </td>
-                  <td className="num"><strong>{fmt(sub)}</strong></td>
-                  <td><button className="btn ghost sm" title="Remover" onClick={() => remover(i)}>×</button></td>
+                  <td className="num"><strong style={{ fontSize: '1rem' }}>{fmt(sub)}</strong></td>
+                  <td className="center">
+                    <button className="btn ghost sm" title="Remover"
+                      style={{ width: 32, padding: '4px 0', fontSize: '1rem', lineHeight: 1 }}
+                      onClick={() => remover(i)}>×</button>
+                  </td>
                 </tr>
               );
             })}
@@ -280,7 +297,7 @@ export default function NovoPedido() {
       <h2 className="mt-3">Configurações do Pedido</h2>
       <div className="card">
         <div className="row">
-          <div className="field" style={{ flex: '1 1 240px' }}>
+          <div className="field" style={{ flex: '2 1 260px' }}>
             <label>Cliente</label>
             <input type="text" value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Nome do cliente (opcional)" />
           </div>
@@ -288,10 +305,12 @@ export default function NovoPedido() {
             <label>Prazo de entrega</label>
             <input type="datetime-local" value={prazo} onChange={e => setPrazo(e.target.value)} />
           </div>
-          <div className="field" style={{ flex: '0 0 160px' }}>
-            <label>Desconto (%) <span className="hint" style={{ marginLeft: 4 }}>máx {calc.descontoMaxPct.toFixed(1)}</span></label>
+          <div className="field" style={{ flex: '0 0 140px' }}>
+            <label>Desconto (%)</label>
             <input type="number" min="0" max={Math.floor(calc.descontoMaxPct * 10) / 10} step="0.5" value={descontoPct}
+              style={{ textAlign: 'right' }}
               onChange={e => setDescontoPct(clamp(Number(e.target.value) || 0, 0, calc.descontoMaxPct))} />
+            <div className="hint">máximo {calc.descontoMaxPct.toFixed(1)}%</div>
           </div>
         </div>
         <div className="field" style={{ marginBottom: 0 }}>
@@ -305,18 +324,37 @@ export default function NovoPedido() {
 
       {/* ---------- Sticky bottom bar com totais + ações ---------- */}
       <div style={{
-        position: 'sticky', bottom: 0, marginTop: 24,
+        position: 'sticky', bottom: 0, marginTop: 28,
         background: 'var(--paper)',
         borderTop: '1px solid var(--paper-edge)',
-        padding: '14px 0 4px',
+        padding: '14px 4px 6px',
         zIndex: 5,
       }}>
-        <div className="flex between center-y wrap gap-2">
-          <div className="flex gap-2 wrap" style={{ alignItems: 'baseline' }}>
-            <div className="small muted">Subtotal <strong style={{ color: 'var(--ink)' }}>{fmt(calc.subtotal)}</strong></div>
-            <div className="small muted">Desconto <strong style={{ color: 'var(--ink)' }}>−{fmt(calc.descAbs)}</strong></div>
-            <div style={{ fontSize: '1.15rem', fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>
-              Total <span style={{ color: 'var(--gold-deep)' }}>{fmt(calc.total)}</span>
+        <div className="flex between center-y wrap" style={{ gap: 24 }}>
+          {/* Totais com separadores verticais */}
+          <div className="flex wrap" style={{ alignItems: 'baseline', gap: 0 }}>
+            <div style={{ padding: '0 18px 0 0', borderRight: '1px solid var(--paper-edge)' }}>
+              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Subtotal</div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.05rem', fontWeight: 600 }}>
+                {fmt(calc.subtotal)}
+              </div>
+            </div>
+            <div style={{ padding: '0 18px', borderRight: '1px solid var(--paper-edge)' }}>
+              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Desconto</div>
+              <div style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: '1.05rem',
+                fontWeight: 600,
+                color: calc.descAbs > 0 ? 'var(--burgundy)' : 'var(--ink-faded)',
+              }}>
+                {calc.descAbs > 0 ? `−${fmt(calc.descAbs)}` : fmt(0)}
+              </div>
+            </div>
+            <div style={{ padding: '0 18px' }}>
+              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Total</div>
+              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold-deep)', lineHeight: 1 }}>
+                {fmt(calc.total)}
+              </div>
             </div>
           </div>
           <div className="flex gap-1 wrap">
