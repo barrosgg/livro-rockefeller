@@ -1,0 +1,191 @@
+/* =====================================================================
+   Recibo de Produção — comprovante público
+   ===================================================================== */
+
+.recibo-stage {
+  display: grid; place-items: center;
+  padding: 20px 0;
+}
+
+.recibo {
+  width: 100%;
+  max-width: 720px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='44'><g fill='none' stroke='%236e5616' stroke-width='0.4' opacity='0.10'><path d='M0 8 Q27.5 -2 55 8 T110 8 T165 8 T220 8'/><path d='M0 19 Q27.5 9 55 19 T110 19 T165 19 T220 19'/><path d='M0 30 Q27.5 20 55 30 T110 30 T165 30 T220 30'/><path d='M0 41 Q27.5 31 55 41 T110 41 T165 41 T220 41'/></g></svg>"),
+    linear-gradient(135deg, #fdf9ed 0%, #f5ecd0 100%);
+  border-radius: 6px;
+  padding: 30px 36px 24px;
+  position: relative;
+  box-shadow:
+    0 24px 50px rgba(0,0,0,.22),
+    0 0 0 1px var(--gold),
+    inset 0 0 0 5px var(--paper),
+    inset 0 0 0 6px var(--gold-deep);
+}
+
+.recibo-header {
+  text-align: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--gold);
+  position: relative;
+}
+.recibo-header img.brand {
+  display: block;
+  margin: 0 auto;
+  max-width: 200px;
+  max-height: 56px;
+}
+.recibo-numero {
+  position: absolute;
+  top: 0; right: 0;
+  font-family: 'Lora', serif;
+  font-size: .7rem;
+  letter-spacing: .16em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+.recibo-empresa {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: .66rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 6px;
+}
+.recibo-empresa-end {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: .68rem;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--ink-mute);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.recibo-pessoa {
+  display: flex; gap: 12px; align-items: center;
+  margin-top: 18px;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(160,129,48,.4);
+}
+.recibo-pessoa-nome {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+.recibo-pessoa-meta {
+  font-family: 'Lora', serif;
+  font-size: .8rem;
+  color: var(--ink-mute);
+  margin-top: 2px;
+}
+
+.recibo-meta-pedido {
+  font-family: 'Lora', serif;
+  font-size: .9rem;
+  color: var(--ink-soft);
+  margin: 12px 0;
+}
+
+.recibo-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Lora', serif;
+  font-size: .9rem;
+  margin: 8px 0 16px;
+}
+.recibo-tabela th, .recibo-tabela td {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(160,129,48,.2);
+}
+.recibo-tabela th {
+  font-family: 'Playfair Display', serif;
+  font-size: .68rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-mute);
+  text-align: left;
+}
+.recibo-tabela th.num, .recibo-tabela td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.recibo-totais {
+  font-family: 'Lora', serif;
+  margin-top: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--gold);
+}
+.recibo-totais > div {
+  display: flex; justify-content: space-between;
+  padding: 4px 4px;
+}
+.recibo-totais-desc { color: var(--burgundy); }
+.recibo-totais-final {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+  padding-top: 8px;
+  border-top: 1px solid rgba(160,129,48,.3);
+  margin-top: 4px;
+}
+
+.recibo-footer {
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.recibo-assinatura {
+  flex: 1;
+  min-width: 240px;
+}
+.recibo-assinatura-cursiva {
+  font-family: 'Great Vibes', 'Allison', cursive;
+  font-size: 2rem;
+  color: var(--ink);
+  line-height: 1;
+  transform: rotate(-3deg);
+  display: inline-block;
+  margin-bottom: 2px;
+  opacity: .9;
+}
+.recibo-assinatura-linha {
+  border-top: 1px solid var(--ink-soft);
+  margin: 0 8px 4px;
+}
+.recibo-assinatura-print {
+  font-family: 'Playfair Display', serif;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.recibo-assinatura-meta {
+  font-family: 'Lora', serif;
+  font-size: .76rem;
+  font-style: italic;
+  color: var(--ink-mute);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.recibo-assinatura-meta strong {
+  font-style: normal;
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .recibo { padding: 22px 18px; }
+  .recibo-header img.brand { max-width: 170px; }
+}

@@ -1,21 +1,51 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, isProfileComplete } from '../lib/auth.jsx';
 import { supabase } from '../lib/supabase.js';
 import Avatar from '../components/Avatar.jsx';
 import Credencial from '../components/Credencial.jsx';
 import Contrato from '../components/Contrato.jsx';
+import Conquistas from '../components/Conquistas.jsx';
+import { baixarComoPng } from '../lib/export.js';
 import '../styles/credencial.css';
 import '../styles/contrato.css';
 
-/* ============== VISTA — Tabs Credencial/Contrato ============== */
+/* ============== VISTA — Tabs Credencial/Contrato/Conquistas ============== */
 function CredencialView({ profile, onEdit, onContratoAssinado }) {
   const [tab, setTab] = useState('credencial');
   const [toast, setToast] = useState(null);
+  const credencialRef = useRef(null);
+  const contratoRef = useRef(null);
   const url = profile?.public_code
     ? `${window.location.origin}/c/${profile.public_code}`
     : null;
   const contratoOk = !!profile?.contrato_assinado_em;
+
+  const baixarCredencial = async () => {
+    if (!credencialRef.current) return;
+    setToast('Gerando PNG…');
+    try {
+      await baixarComoPng(credencialRef.current.querySelector('.credencial'),
+        `credencial-${profile?.public_code || 'rockefeller'}`);
+      setToast('PNG baixado.');
+    } catch (e) {
+      setToast('Não foi possível gerar o PNG.');
+    }
+    setTimeout(() => setToast(null), 2200);
+  };
+
+  const baixarContrato = async () => {
+    if (!contratoRef.current) return;
+    setToast('Gerando PNG…');
+    try {
+      await baixarComoPng(contratoRef.current.querySelector('.contrato-card'),
+        `contrato-${profile?.nome_completo?.replace(/\s+/g, '-').toLowerCase() || 'assinado'}`);
+      setToast('PNG baixado.');
+    } catch (e) {
+      setToast('Não foi possível gerar o PNG.');
+    }
+    setTimeout(() => setToast(null), 2200);
+  };
 
   const copiar = async () => {
     if (!url) return;
@@ -46,14 +76,20 @@ function CredencialView({ profile, onEdit, onContratoAssinado }) {
             ? <span className="perfil-tab-status ok">✓</span>
             : <span className="perfil-tab-status pendente">!</span>}
         </button>
+        <button
+          className={`perfil-tab ${tab === 'conquistas' ? 'active' : ''}`}
+          onClick={() => setTab('conquistas')}>
+          Conquistas
+        </button>
       </div>
 
       {tab === 'credencial' && (
-        <div className="credencial-stage">
+        <div className="credencial-stage" ref={credencialRef}>
           <Credencial profile={profile} />
 
           <div className="mt-2 center flex gap-1" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="btn" onClick={onEdit}>Editar Credencial</button>
+            <button className="btn ghost" onClick={baixarCredencial}>⬇ Baixar PNG</button>
             {url && (
               <button className="btn ghost" onClick={copiar}>📎 Copiar link público</button>
             )}
@@ -75,8 +111,20 @@ function CredencialView({ profile, onEdit, onContratoAssinado }) {
       )}
 
       {tab === 'contrato' && (
-        <div>
+        <div ref={contratoRef}>
           <Contrato profile={profile} onAssinar={onContratoAssinado} />
+          {contratoOk && (
+            <div className="mt-2 center">
+              <button className="btn ghost" onClick={baixarContrato}>⬇ Baixar Contrato (PNG)</button>
+            </div>
+          )}
+          {toast && <div className="toast">{toast}</div>}
+        </div>
+      )}
+
+      {tab === 'conquistas' && (
+        <div>
+          <Conquistas userId={profile.id} />
         </div>
       )}
     </div>

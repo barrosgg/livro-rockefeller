@@ -446,6 +446,11 @@ export default function PedidoDetalhe() {
                     {isManager && c.status === 'entregue' && (
                       <button className="btn sm" onClick={() => marcarPago(c)}>💰 Confirmar Pagamento</button>
                     )}
+                    {c.status === 'pago' && c.public_code && (
+                      <a className="btn ghost sm" href={`/r/${c.public_code}`} target="_blank" rel="noopener noreferrer">
+                        📜 Recibo
+                      </a>
+                    )}
                   </div>
                 </div>
 

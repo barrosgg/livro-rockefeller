@@ -9,6 +9,7 @@ import MeusTrabalhos from './pages/MeusTrabalhos.jsx';
 import Admin from './pages/Admin.jsx';
 import PedidoPublico from './pages/PedidoPublico.jsx';
 import CredencialPublica from './pages/CredencialPublica.jsx';
+import ReciboPublico from './pages/ReciboPublico.jsx';
 import Avatar from './components/Avatar.jsx';
 
 function Topbar() {
@@ -85,6 +86,7 @@ export default function App() {
       <Route path="/login" element={user ? <Navigate to="/pedidos" replace /> : <Login />} />
       {/* Rotas públicas — sem auth */}
       <Route path="/p/:token" element={<PedidoPublico />} />
+      <Route path="/r/:code" element={<ReciboPublico />} />
       <Route path="/c/:code" element={<CredencialPublica />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/pedidos" replace />} />
