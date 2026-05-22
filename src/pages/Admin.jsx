@@ -230,10 +230,16 @@ function ProdutosTab() {
               onChange={e => setNovo({ ...novo, preco_max: e.target.value })} required />
           </div>
           <div className="field" style={{ flex: '1 1 180px' }}>
-            <label>Ícone <span className="hint" style={{ marginLeft: 4 }}>game-icons.net</span></label>
+            <label>
+              Ícone
+              {' '}
+              <a href="https://game-icons.net" target="_blank" rel="noopener noreferrer"
+                 style={{ fontSize: '.7rem', marginLeft: 4 }}>buscar →</a>
+            </label>
             <input type="text" value={novo.icon}
-              placeholder="ex: lorc/wheat (opcional)"
+              placeholder="ex: delapouite/corn"
               onChange={e => setNovo({ ...novo, icon: e.target.value })} />
+            <div className="hint">Formato: <code>autor/nome-icone</code></div>
           </div>
           <button className="btn">Adicionar</button>
         </form>

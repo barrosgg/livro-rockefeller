@@ -1,36 +1,27 @@
 #!/usr/bin/env bash
-# Baixa todos os ícones usados pelo Caderno da Fazenda Rockefeller
+# Baixa os ícones usados pelo Caderno da Fazenda Rockefeller
 # de game-icons.net (CC BY 3.0). Salva em public/icons/.
+#
+# Apenas slugs CONFIRMADOS como existentes em game-icons.net.
+# Se quiser adicionar mais, busque em https://game-icons.net e
+# inclua na lista abaixo no formato <author>/<icon>.
 #
 # Uso: bash scripts/download-icons.sh
 
 set -e
 mkdir -p public/icons
 
-# Lista de slugs no formato <author>/<icon> usados nos produtos
 SLUGS=(
-  "lorc/apple"
-  "lorc/banana"
-  "lorc/cotton-flower"
-  "lorc/dung-pile"
-  "lorc/egg"
-  "lorc/herbs-bundle"
   "lorc/horse-head"
-  "lorc/sack"
-  "lorc/sugar-cane"
   "lorc/wheat"
   "delapouite/carrot"
-  "delapouite/cheese-wedge"
   "delapouite/cherry"
   "delapouite/coffee-beans"
   "delapouite/corn"
   "delapouite/cow"
   "delapouite/garlic"
   "delapouite/grain-bundle"
-  "delapouite/milk-carton"
-  "delapouite/mint-leaf"
   "delapouite/orange-slice"
-  "delapouite/pig"
   "delapouite/potato"
   "delapouite/sheep"
   "delapouite/strawberry"
@@ -44,20 +35,19 @@ for slug in "${SLUGS[@]}"; do
   out="public/icons/${author}__${icon}.svg"
 
   if [ -f "$out" ]; then
-    echo "  [skip] $out (já existe)"
+    echo "  [skip] $out"
     continue
   fi
 
   url="${BASE_URL}/${author}/${icon}.svg"
-  echo "  [baixando] $slug -> $out"
+  echo "  [baixando] $slug"
   if curl -fsSL "$url" -o "$out"; then
     echo "             OK"
   else
-    echo "             FALHOU (ícone não existe — fallback automatico)"
+    echo "             FALHOU"
     rm -f "$out"
   fi
 done
 
 echo ""
-echo "Concluído. ${#SLUGS[@]} ícones processados em public/icons/."
-echo "Atribuição: game-icons.net (autores: Lorc & Delapouite, CC BY 3.0)."
+echo "Concluído. Atribuição: game-icons.net (Lorc & Delapouite, CC BY 3.0)."
