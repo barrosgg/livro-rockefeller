@@ -55,13 +55,20 @@ try_slugs "Ovo" \
   "lorc/cracked-egg" "delapouite/egg-clutch" "delapouite/chicken-oven" "delapouite/chicken"
 
 try_slugs "Leite" \
-  "delapouite/milk-bottle" "delapouite/glass-of-milk" "delapouite/cancel"
+  "delapouite/milk-bottle" "delapouite/glass-of-milk" \
+  "lorc/milk-carton" "lorc/spilling-bottle" "delapouite/water-bottle" \
+  "delapouite/baby-bottle" "delapouite/jug" "lorc/water-drop" \
+  "delapouite/round-bottom-flask" "delapouite/glass-shot" "lorc/wooden-mug"
 
 try_slugs "Leite de Cabra" \
-  "delapouite/goat" "delapouite/milk-bottle" "delapouite/glass-of-milk"
+  "delapouite/goat" "lorc/goat" "delapouite/goat-head" "lorc/goat-head" \
+  "delapouite/milk-bottle" "lorc/spilling-bottle" "lorc/wooden-mug" \
+  "delapouite/round-bottom-flask"
 
 try_slugs "Coalhada" \
-  "delapouite/milk-bottle" "delapouite/glass-of-milk"
+  "delapouite/milk-bottle" "delapouite/glass-of-milk" \
+  "lorc/jar" "delapouite/canned-food" "delapouite/jug" \
+  "lorc/wooden-mug" "delapouite/round-bottom-flask"
 
 try_slugs "Queijo" \
   "delapouite/cheese-slice" "lorc/cheese-wedge" "delapouite/wedge-stoneworks"
@@ -101,7 +108,9 @@ try_slugs "Giseng Americano" \
   "delapouite/ginseng" "lorc/ginseng" "delapouite/lotus-flower" "delapouite/yarn"
 
 try_slugs "Giseng-do-Alaska" \
-  "delapouite/ginseng" "lorc/ginseng" "delapouite/lotus-flower"
+  "delapouite/ginseng" "lorc/ginseng" "delapouite/lotus-flower" \
+  "delapouite/yarn" "lorc/branch-arrow" "delapouite/snowing" \
+  "delapouite/snowflake-1" "lorc/medicines"
 
 try_slugs "Maçã" \
   "delapouite/apple" "lorc/apple" "delapouite/apple-core"
