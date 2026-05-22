@@ -34,8 +34,12 @@
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html, body, #root { min-height: 100%; }
-html { background: var(--bg); }
+html {
+  background: var(--bg);
+}
+body, #root {
+  min-height: 100vh;
+}
 body {
   margin: 0;
   background: var(--bg);
