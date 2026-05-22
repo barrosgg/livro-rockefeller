@@ -10,32 +10,32 @@
   justify-content: flex-start;
   padding: 24px 24px 24px 6%;
   overflow: hidden;
+  /* IMAGEM primeiro (visível por padrão), gradiente warm leve por cima */
   background:
-    /* gradiente warm para dar tonalidade vintage */
-    linear-gradient(115deg, rgba(80,40,15,.35) 0%, rgba(80,40,15,.05) 35%, rgba(80,40,15,.25) 100%),
+    /* tinta warm sutil — só pra dar clima sépia sem matar a foto */
+    linear-gradient(115deg, rgba(120,70,30,.12) 0%, rgba(120,70,30,.02) 50%, rgba(120,70,30,.10) 100%),
     /* imagem da fazenda */
     url('/imagem-fazenda.png') center/cover no-repeat,
     /* fallback */
     var(--bg-1);
-  background-blend-mode: multiply, normal;
 }
 
-/* Camada warm/sepia em cima da imagem (deixa tudo no clima 1900) */
+/* Camada sépia bem leve focada no canto esquerdo (onde fica o card) */
 .login-stage::before {
   content: "";
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse at 30% 50%, transparent 0%, rgba(20,15,8,.55) 75%);
+    radial-gradient(ellipse at 25% 50%, rgba(20,15,8,.45) 0%, transparent 60%);
   pointer-events: none;
   z-index: 1;
 }
 
-/* Vinheta dramática nos cantos */
+/* Vinheta suave nos cantos — não preta no centro pra foto respirar */
 .login-vignette {
   position: absolute; inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,.55) 100%);
+    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.35) 100%);
   z-index: 2;
 }
 
