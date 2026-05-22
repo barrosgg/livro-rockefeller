@@ -36,11 +36,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 html {
   background: var(--bg);
-}
-body, #root {
-  min-height: 100vh;
+  min-height: 100%;
 }
 body {
+  min-height: 100vh;
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -50,6 +49,18 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Sticky footer: #root vira coluna flex, main expande,
+   footer encosta no rodapé do viewport quando o conteúdo é curto.
+   Sem isto, uma faixa do body fica visível abaixo do footer. */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+#root > main.shell { flex: 1 0 auto; }
+#root > .site-footer { flex-shrink: 0; }
 
 a { color: var(--gold-deep); text-decoration: none; transition: color .15s; }
 a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold-soft); }
@@ -138,8 +149,14 @@ main.shell:focus-visible {
 .site-footer {
   margin-top: 60px;
   padding: 40px 16px 48px;
-  background:
-    linear-gradient(180deg, transparent 0%, rgba(176,141,61,.04) 50%, rgba(176,141,61,.08) 100%);
+  /* Background SÓLIDO em cima (mesma cor do body) + tinta dourada por cima.
+     Sem usar `transparent` para não revelar nada por trás. */
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg,
+      rgba(176,141,61,.00) 0%,
+      rgba(176,141,61,.04) 50%,
+      rgba(176,141,61,.08) 100%);
   border-top: 1px solid var(--paper-edge);
   position: relative;
 }
