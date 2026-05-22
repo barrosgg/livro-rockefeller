@@ -237,7 +237,7 @@ export default function PedidoDetalhe() {
   const urlPedido = `${window.location.origin}/pedidos/${pedido.short_code || pedido.id}`;
   const urlPublico = pedido.public_code
     ? `${window.location.origin}/p/${pedido.public_code}`
-    : (pedido.public_token ? `${window.location.origin}/p/${pedido.public_token}` : null);
+    : null;
 
   const mensagemDiscord = () => {
     const linhas = [
