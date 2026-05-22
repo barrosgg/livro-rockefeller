@@ -5,7 +5,6 @@
 #
 # Uso: bash scripts/discover-icons.sh
 
-set -e
 mkdir -p public/icons
 BASE="https://game-icons.net/icons/000000/transparent/1x1"
 SQL_OUT="scripts/icons-discovered.sql"
