@@ -6,6 +6,12 @@ export default function Login() {
 
   return (
     <div className="login-stage">
+      <img
+        src="/imagem-fazenda.png"
+        alt=""
+        aria-hidden="true"
+        className="login-bg-img"
+      />
       <div className="login-vignette" />
       <div className="login-dust" />
       <div className="login-mist" />
