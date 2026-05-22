@@ -15,7 +15,11 @@ function gerarNumeroCredencial(seed) {
 function formatarData(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  // Universo do jogo está fixo em 1901 — preserva dia/mês reais
+  const dia = String(d.getDate()).padStart(2, '0');
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho',
+                 'julho','agosto','setembro','outubro','novembro','dezembro'];
+  return `${dia} de ${meses[d.getMonth()]} de 1901`;
 }
 
 /**
@@ -83,7 +87,7 @@ export default function Credencial({ profile }) {
         <div className="credencial-selo" title="Família Rockefeller · Registro Oficial">
           <div className="credencial-selo-top">Família</div>
           <div className="credencial-selo-mid">R</div>
-          <div className="credencial-selo-bottom">MCM</div>
+          <div className="credencial-selo-bottom">MCMI</div>
         </div>
       </footer>
     </div>

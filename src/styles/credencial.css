@@ -130,7 +130,7 @@
   overflow: hidden;
 }
 .credencial-avatar-frame::after {
-  content: "1900";
+  content: "1901";
   position: absolute;
   bottom: -8px; right: -8px;
   background: var(--burgundy);
