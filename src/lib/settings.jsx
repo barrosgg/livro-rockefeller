@@ -6,6 +6,14 @@ const SettingsContext = createContext(null);
 const DEFAULTS = {
   commission_pct: 0.25,
   farm_name: 'Fazenda Rockefeller',
+  categorias: [
+    'Frutas, Grãos & Vegetais',
+    'Laticínios',
+    'Animais & Insumos',
+    'Especiarias & Outros',
+    'Matérias-primas',
+    'Sacos',
+  ],
 };
 
 export function SettingsProvider({ children }) {
@@ -43,3 +51,4 @@ export const useSettings = () => useContext(SettingsContext);
 /** Helpers convenientes */
 export const useCommissionPct = () => useSettings()?.settings?.commission_pct ?? DEFAULTS.commission_pct;
 export const useWorkerPct = () => 1 - useCommissionPct();
+export const useCategorias = () => useSettings()?.settings?.categorias ?? DEFAULTS.categorias;

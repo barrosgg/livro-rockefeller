@@ -1,14 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { fmt } from '../lib/calc.js';
-
-const ORDEM_CATEGORIAS = [
-  'Frutas, Grãos & Vegetais',
-  'Laticínios',
-  'Animais & Insumos',
-  'Especiarias & Outros',
-  'Matérias-primas',
-  'Sacos',
-];
+import { useCategorias } from '../lib/settings.jsx';
 
 /**
  * Combobox de produto:
@@ -17,6 +9,7 @@ const ORDEM_CATEGORIAS = [
  * - ref expõe { focus(), clear() } para o parent
  */
 const ProdutoCombo = forwardRef(function ProdutoCombo({ produtos, value, onSelect, onEnterEmpty, placeholder = 'Buscar produto…' }, ref) {
+  const categorias = useCategorias();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
@@ -50,7 +43,7 @@ const ProdutoCombo = forwardRef(function ProdutoCombo({ produtos, value, onSelec
       map.get(p.categoria).push(p);
     }
     const result = [];
-    for (const cat of ORDEM_CATEGORIAS) {
+    for (const cat of categorias) {
       const arr = map.get(cat);
       if (arr?.length) {
         result.push({ type: 'group', cat });

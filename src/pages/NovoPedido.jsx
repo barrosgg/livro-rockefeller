@@ -30,8 +30,11 @@ export default function NovoPedido() {
   const navigate = useNavigate();
 
   const [produtos, setProdutos] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [selProd, setSelProd] = useState(null);
   const [qtd, setQtd] = useState(50);
+  const [salvarTplOpen, setSalvarTplOpen] = useState(false);
+  const [tplNome, setTplNome] = useState('');
 
   const [draft, setDraft, limparDraft] = useLocalStorage('draft:pedido:novo', () => ({
     itens: [], cliente: '', anotacoes: '', descontoPct: 0, prazo: '', numero: novoNumero(),
@@ -59,7 +62,42 @@ export default function NovoPedido() {
       if (error) setErro(error.message);
       else setProdutos(data || []);
     });
+    supabase.from('order_templates')
+      .select('*, items:order_template_items(*, product:products(*))')
+      .order('criado_em', { ascending: false })
+      .then(({ data }) => setTemplates(data || []));
   }, []);
+
+  const carregarTemplate = (tplId) => {
+    const t = templates.find(x => x.id === tplId);
+    if (!t) return;
+    setDraft(d => ({
+      ...d,
+      itens: (t.items || []).map(i => ({ product: i.product, quantidade: i.quantidade, preco_unit: Number(i.preco_unit) })),
+    }));
+  };
+
+  const salvarComoTemplate = async () => {
+    if (!tplNome.trim()) { alert('Dê um nome ao template.'); return; }
+    if (itens.length === 0) { alert('Adicione itens antes de salvar como template.'); return; }
+    const { data: tpl, error: e1 } = await supabase.from('order_templates').insert({
+      nome: tplNome.trim(), criado_por: user.id,
+    }).select().single();
+    if (e1) { alert(e1.message); return; }
+    const payload = itens.map(i => ({
+      template_id: tpl.id, product_id: i.product.id,
+      quantidade: i.quantidade, preco_unit: i.preco_unit,
+    }));
+    const { error: e2 } = await supabase.from('order_template_items').insert(payload);
+    if (e2) { alert(e2.message); return; }
+    setSalvarTplOpen(false); setTplNome('');
+    // recarrega lista
+    const { data } = await supabase.from('order_templates')
+      .select('*, items:order_template_items(*, product:products(*))')
+      .order('criado_em', { ascending: false });
+    setTemplates(data || []);
+    alert('Template salvo!');
+  };
 
   // Foco inicial no combobox
   useEffect(() => { comboRef.current?.focus(); }, []);
@@ -197,6 +235,39 @@ export default function NovoPedido() {
           <Kbd>Ctrl</Kbd>+<Kbd>S</Kbd> rascunho
         </div>
       </div>
+
+      {/* ---------- Templates (carregar / salvar) ---------- */}
+      {(templates.length > 0 || itens.length > 0) && (
+        <div className="card mt-2" style={{ background: 'transparent', borderStyle: 'dashed' }}>
+          <div className="flex between center-y wrap gap-2">
+            {templates.length > 0 ? (
+              <div className="flex gap-1 center-y wrap">
+                <span className="muted small">Carregar template:</span>
+                <select onChange={e => e.target.value && carregarTemplate(e.target.value)} value="">
+                  <option value="">— escolha —</option>
+                  {templates.map(t => (
+                    <option key={t.id} value={t.id}>{t.nome} ({(t.items || []).length} itens)</option>
+                  ))}
+                </select>
+              </div>
+            ) : <div />}
+            {itens.length > 0 && (
+              salvarTplOpen ? (
+                <div className="flex gap-1 center-y wrap">
+                  <input type="text" placeholder="Nome do template" value={tplNome}
+                    onChange={e => setTplNome(e.target.value)} autoFocus style={{ minWidth: 200 }} />
+                  <button className="btn sm" onClick={salvarComoTemplate}>Salvar</button>
+                  <button className="btn ghost sm" onClick={() => { setSalvarTplOpen(false); setTplNome(''); }}>Cancelar</button>
+                </div>
+              ) : (
+                <button className="btn ghost sm" onClick={() => setSalvarTplOpen(true)}>
+                  💾 Salvar como template
+                </button>
+              )
+            )}
+          </div>
+        </div>
+      )}
 
       <hr className="divider" />
 

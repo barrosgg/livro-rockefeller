@@ -286,6 +286,9 @@ export default function PedidoDetalhe() {
         </div>
       )}
 
+      {/* ---------- Notas internas (só gerente/proprietário) ---------- */}
+      {isManager && <NotasInternas orderId={orderId} initial={pedido.notas_internas || ''} onSaved={carregar} />}
+
       {/* ---------- KPIs ---------- */}
       <div className="grid-3 mt-3">
         <div className="stat">
@@ -441,6 +444,49 @@ export default function PedidoDetalhe() {
       )}
 
       <Toast message={toast?.msg} type={toast?.type} onClose={() => setToast(null)} />
+    </div>
+  );
+}
+
+/* ---------- Notas internas (gerente/proprietário) ---------- */
+function NotasInternas({ orderId, initial, onSaved }) {
+  const [val, setVal] = useState(initial || '');
+  const [edit, setEdit] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setVal(initial || ''); }, [initial]);
+
+  const salvar = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('orders').update({ notas_internas: val || null }).eq('id', orderId);
+    setSaving(false);
+    if (error) { alert(error.message); return; }
+    setEdit(false);
+    onSaved?.();
+  };
+
+  return (
+    <div className="card mt-2" style={{ background: 'rgba(132,36,25,.06)', borderColor: 'rgba(132,36,25,.3)' }}>
+      <div className="flex between center-y">
+        <span className="muted small">
+          🔒 <strong>Notas internas</strong> (só gerentes/proprietário veem)
+        </span>
+        {!edit && <button className="btn ghost sm" onClick={() => setEdit(true)}>{val ? 'editar' : 'adicionar'}</button>}
+      </div>
+      {edit ? (
+        <>
+          <textarea value={val} onChange={e => setVal(e.target.value)} maxLength={500}
+            placeholder="Anotações privadas — combustível pra decisões internas, contexto do cliente, ressalvas…"
+            style={{ marginTop: 8 }} />
+          <div className="flex gap-1 mt-1">
+            <button className="btn sm" disabled={saving} onClick={salvar}>Salvar</button>
+            <button className="btn ghost sm" onClick={() => { setVal(initial || ''); setEdit(false); }}>Cancelar</button>
+          </div>
+        </>
+      ) : (
+        val ? <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{val}</p>
+            : <p className="muted it small mt-1">Sem notas internas.</p>
+      )}
     </div>
   );
 }
