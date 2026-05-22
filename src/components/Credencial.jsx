@@ -1,4 +1,5 @@
 import Avatar from './Avatar.jsx';
+import Medal from './Medal.jsx';
 import { BADGES } from '../lib/badges.js';
 
 const ROLE_LABELS = {
@@ -83,16 +84,11 @@ export default function Credencial({ profile }) {
         const ganhas = BADGES.filter(b => extras.includes(b.id));
         if (ganhas.length === 0) return null;
         return (
-          <div className="credencial-conquistas">
-            <span className="credencial-conquistas-label">Conquistas</span>
-            <div className="credencial-conquistas-grid">
-              {ganhas.map(b => (
-                <span key={b.id} className="credencial-conquista" title={`${b.nome} — ${b.desc}`}>
-                  <span className="credencial-conquista-emoji">{b.emoji}</span>
-                  <span className="credencial-conquista-nome">{b.nome}</span>
-                </span>
-              ))}
-            </div>
+          <div className="credencial-medalhas" aria-label={`${ganhas.length} conquistas`}>
+            {ganhas.map(b => (
+              <Medal key={b.id} tier={b.tier} symbol={b.symbol} size={24}
+                title={`${b.nome} — ${b.desc}`} />
+            ))}
           </div>
         );
       })()}
