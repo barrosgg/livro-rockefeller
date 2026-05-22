@@ -7,6 +7,7 @@ import NovoPedido from './pages/NovoPedido.jsx';
 import PedidoDetalhe from './pages/PedidoDetalhe.jsx';
 import MeusTrabalhos from './pages/MeusTrabalhos.jsx';
 import Admin from './pages/Admin.jsx';
+import PedidoPublico from './pages/PedidoPublico.jsx';
 
 function Topbar() {
   const { profile, signOut } = useAuth();
@@ -58,6 +59,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/pedidos" replace /> : <Login />} />
+      {/* Rota pública do cliente — sem auth */}
+      <Route path="/p/:token" element={<PedidoPublico />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/pedidos" replace />} />
         <Route path="/perfil"       element={<Protected><Perfil /></Protected>} />

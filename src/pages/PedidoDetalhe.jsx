@@ -3,11 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
 import { fmt, totalPedido, statusLabel, TRABALHADOR_PCT, COMISSAO_PCT } from '../lib/calc.js';
+import StatusTimeline from '../components/StatusTimeline.jsx';
 
 function Toast({ message, type='ok', onClose }) {
   useEffect(() => {
     if (!message) return;
-    const t = setTimeout(onClose, 2400);
+    const t = setTimeout(onClose, 2800);
     return () => clearTimeout(t);
   }, [message, onClose]);
   if (!message) return null;
@@ -28,35 +29,38 @@ export default function PedidoDetalhe() {
 
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
 
-  /* ---- claim em construção ---- */
   const [novoClaim, setNovoClaim] = useState({});
   const [dataPrevista, setDataPrevista] = useState('');
   const [criandoClaim, setCriandoClaim] = useState(false);
 
   const carregar = useCallback(async () => {
     setLoading(true);
-    const [p, oi, bal, cl] = await Promise.all([
-      supabase.from('orders').select('*').eq('id', id).maybeSingle(),
-      supabase.from('order_items').select('*, product:products(*)').eq('order_id', id),
-      supabase.from('order_item_balance').select('*').eq('order_id', id),
-      supabase.from('claims')
-        .select('*, trabalhador:profiles!claims_trabalhador_id_fkey(*), items:claim_items(*, order_item:order_items(*, product:products(*)))')
-        .eq('order_id', id)
-        .order('criado_em'),
-    ]);
-    if (p.error) setErro(p.error.message);
-    setPedido(p.data || null);
-    setItens(oi.data || []);
-    const map = {};
-    (bal.data || []).forEach(b => { map[b.order_item_id] = b; });
-    setBalance(map);
-    setClaims(cl.data || []);
-    setLoading(false);
+    try {
+      const [p, oi, bal, cl] = await Promise.all([
+        supabase.from('orders').select('*').eq('id', id).maybeSingle(),
+        supabase.from('order_items').select('*, product:products(*)').eq('order_id', id),
+        supabase.from('order_item_balance').select('*').eq('order_id', id),
+        supabase.from('claims')
+          .select('*, trabalhador:profiles!claims_trabalhador_id_fkey(*), items:claim_items(*, order_item:order_items(*, product:products(*)))')
+          .eq('order_id', id)
+          .order('criado_em'),
+      ]);
+      if (p.error) setErro(p.error.message);
+      setPedido(p.data || null);
+      setItens(oi.data || []);
+      const map = {};
+      (bal.data || []).forEach(b => { map[b.order_item_id] = b; });
+      setBalance(map);
+      setClaims(cl.data || []);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  /* ---- valores agregados ---- */
   const agg = useMemo(() => {
     const totais = totalPedido({
       itens: itens.map(i => ({ preco_unit: i.preco_unit, quantidade: i.quantidade })),
@@ -72,7 +76,6 @@ export default function PedidoDetalhe() {
   if (loading) return <div className="page">Carregando…</div>;
   if (!pedido) return <div className="page">Pedido não encontrado. <Link to="/pedidos">Voltar</Link></div>;
 
-  /* ---- ações gerente ---- */
   const aprovar = async () => {
     if (!pedido.prazo_entrega) { setToast({ type: 'err', msg: 'Defina o prazo antes de aprovar.' }); return; }
     const { error } = await supabase.from('orders').update({
@@ -90,7 +93,6 @@ export default function PedidoDetalhe() {
     else { setToast({ msg: 'Pedido cancelado.' }); carregar(); }
   };
 
-  /* ---- claim ---- */
   const totalClaimSelecionado = itens.reduce((acc, it) => acc + Number(novoClaim[it.id] || 0) * it.preco_unit, 0);
 
   const criarClaim = async () => {
@@ -98,34 +100,44 @@ export default function PedidoDetalhe() {
     const escolhidos = itens
       .map(it => ({ order_item_id: it.id, quantidade: Number(novoClaim[it.id] || 0) }))
       .filter(x => x.quantidade > 0);
-    if (escolhidos.length === 0) { setErro('Selecione ao menos 1 item.'); return; }
-    if (!dataPrevista) { setErro('Informe a data prevista de entrega.'); return; }
+    if (escolhidos.length === 0) { setErro('Selecione ao menos 1 produto que você vai fabricar.'); return; }
+    if (!dataPrevista) { setErro('Informe quando você pretende entregar no baú.'); return; }
     for (const e of escolhidos) {
       const aberto = balance[e.order_item_id]?.quantidade_em_aberto ?? 0;
-      if (e.quantidade > aberto) { setErro('Quantidade acima do saldo em aberto para um item.'); return; }
+      if (e.quantidade > aberto) { setErro('Você marcou mais unidades do que ainda está em aberto.'); return; }
     }
+
     setCriandoClaim(true);
-    const { data: claim, error: e1 } = await supabase.from('claims').insert({
-      order_id: id,
-      trabalhador_id: user.id,
-      data_prevista_entrega: new Date(dataPrevista).toISOString(),
-      status: 'em_producao',
-    }).select().single();
-    if (e1) { setErro(e1.message); setCriandoClaim(false); return; }
-    const { error: e2 } = await supabase.from('claim_items').insert(
-      escolhidos.map(e => ({ claim_id: claim.id, order_item_id: e.order_item_id, quantidade: e.quantidade }))
-    );
-    if (e2) { setErro(e2.message); setCriandoClaim(false); return; }
-    if (pedido.status === 'aprovado') {
-      await supabase.from('orders').update({ status: 'em_producao' }).eq('id', id);
+    try {
+      const { data: claim, error: e1 } = await supabase.from('claims').insert({
+        order_id: id,
+        trabalhador_id: user.id,
+        data_prevista_entrega: new Date(dataPrevista).toISOString(),
+        status: 'em_producao',
+      }).select().single();
+      if (e1) throw e1;
+
+      const { error: e2 } = await supabase.from('claim_items').insert(
+        escolhidos.map(e => ({ claim_id: claim.id, order_item_id: e.order_item_id, quantidade: e.quantidade }))
+      );
+      if (e2) throw e2;
+
+      if (pedido.status === 'aprovado') {
+        await supabase.from('orders').update({ status: 'em_producao' }).eq('id', id);
+      }
+      setNovoClaim({}); setDataPrevista('');
+      setToast({ msg: 'Produção iniciada! Bom trabalho.' });
+      await carregar();
+    } catch (e) {
+      console.error('Erro criar claim:', e);
+      setErro(e.message || 'Não foi possível registrar. Tente novamente.');
+    } finally {
+      setCriandoClaim(false);
     }
-    setNovoClaim({}); setDataPrevista(''); setCriandoClaim(false);
-    setToast({ msg: 'Produção assumida.' });
-    carregar();
   };
 
   const marcarEntregue = async (claim) => {
-    if (!confirm('Confirma a entrega no baú agora?')) return;
+    if (!confirm('Confirma que você entregou os itens no baú agora?')) return;
     const { error } = await supabase.from('claims').update({
       status: 'entregue', entregue_em: new Date().toISOString(),
     }).eq('id', claim.id);
@@ -162,22 +174,23 @@ export default function PedidoDetalhe() {
 
   const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status) && agg.qtdAberto > 0;
   const urlPedido = `${window.location.origin}/pedidos/${pedido.id}`;
+  const urlPublico = pedido.public_token ? `${window.location.origin}/p/${pedido.public_token}` : null;
 
-  /* ---- copia para Discord ---- */
   const mensagemDiscord = () => {
     const linhas = [
       `📜 **Pedido Nº ${pedido.numero_nota}** — Fazenda Rockefeller`,
       pedido.cliente ? `Cliente: **${pedido.cliente}**` : null,
       `Prazo: **${pedido.prazo_entrega ? new Date(pedido.prazo_entrega).toLocaleString('pt-BR') : 'a definir'}**`,
-      `Total: **${fmt(agg.total)}** · Em aberto: **${agg.qtdAberto}/${agg.qtdTotal}** unidades`,
+      `Total: **${fmt(agg.total)}** · Restam **${agg.qtdAberto}/${agg.qtdTotal}** unidades para produzir`,
       '',
       '**Itens em aberto:**',
       ...itens
         .filter(it => (balance[it.id]?.quantidade_em_aberto || 0) > 0)
-        .map(it => `• ${it.product.nome} — ${balance[it.id]?.quantidade_em_aberto}× (${fmt(it.preco_unit)})`),
+        .map(it => `• ${it.product.nome} — ${balance[it.id]?.quantidade_em_aberto}× a ${fmt(it.preco_unit)}`),
       '',
-      `💰 Trabalhadores recebem **${(TRABALHADOR_PCT*100).toFixed(0)}%** do bruto.`,
-      `👉 Assumir produção: ${urlPedido}`,
+      `💰 Quem produz recebe **${(TRABALHADOR_PCT*100).toFixed(0)}%** do bruto.`,
+      `👉 Começar a produção: ${urlPedido}`,
+      urlPublico ? `🔎 Acompanhamento do cliente: ${urlPublico}` : null,
     ];
     return linhas.filter(Boolean).join('\n');
   };
@@ -193,7 +206,6 @@ export default function PedidoDetalhe() {
 
   return (
     <div className="page">
-      {/* ---------- Cabeçalho ---------- */}
       <div className="flex between center-y wrap gap-2">
         <div>
           <Link to="/pedidos" className="muted small">← Pedidos</Link>
@@ -206,12 +218,22 @@ export default function PedidoDetalhe() {
         </div>
         <div className="flex gap-1 center-y wrap">
           <span className={`badge ${pedido.status}`}>{statusLabel(pedido.status)}</span>
-          <button className="btn ghost sm" onClick={() => copiar(urlPedido, 'Link copiado.')}>📎 Link</button>
+          <button className="btn ghost sm" onClick={() => copiar(urlPedido, 'Link interno copiado.')}>📎 Link</button>
           <button className="btn ghost sm" onClick={() => copiar(mensagemDiscord(), 'Mensagem Discord copiada.')}>💬 Discord</button>
+          {urlPublico && (
+            <button className="btn ghost sm" onClick={() => copiar(urlPublico, 'Link público do cliente copiado.')}>
+              👁 Link p/ Cliente
+            </button>
+          )}
           {isManager && pedido.status === 'rascunho' && <button className="btn success sm" onClick={aprovar}>Aprovar</button>}
           {isManager && !['concluido','cancelado'].includes(pedido.status) &&
             <button className="btn danger sm" onClick={cancelar}>Cancelar</button>}
         </div>
+      </div>
+
+      {/* ---------- Timeline ---------- */}
+      <div className="card mt-2" style={{ background: 'var(--page-soft)' }}>
+        <StatusTimeline pedido={pedido} claims={claims} />
       </div>
 
       {pedido.anotacoes && (
@@ -223,34 +245,34 @@ export default function PedidoDetalhe() {
       {/* ---------- KPIs ---------- */}
       <div className="grid-3 mt-3">
         <div className="stat">
-          <div className="label">Progresso</div>
+          <div className="label">Progresso da produção</div>
           <div className="value">{agg.pctAssumido.toFixed(0)}%</div>
-          <div className="hint">{agg.qtdAssumida} de {agg.qtdTotal} unidades assumidas</div>
+          <div className="hint">{agg.qtdAssumida} de {agg.qtdTotal} unidades já em produção</div>
         </div>
         <div className="stat">
-          <div className="label">Em aberto</div>
+          <div className="label">Restam para produzir</div>
           <div className="value">{agg.qtdAberto}</div>
-          <div className="hint">{itens.length} item(ns) no pedido</div>
+          <div className="hint">{itens.length} produto(s) no pedido</div>
         </div>
         <div className="stat accent">
-          <div className="label">Total do pedido</div>
+          <div className="label">Valor total</div>
           <div className="value">{fmt(agg.total)}</div>
-          <div className="hint">Subtotal {fmt(agg.subtotal)} · Desc. −{fmt(agg.desconto)}</div>
+          <div className="hint">Subtotal {fmt(agg.subtotal)} · Desconto −{fmt(agg.desconto)}</div>
         </div>
       </div>
 
       {/* ---------- Tabela de itens ---------- */}
-      <h2 className="mt-3">Itens</h2>
+      <h2 className="mt-3">Lista de Produtos</h2>
       <table className="book">
         <thead>
           <tr>
             <th>Produto</th>
-            <th>Pedido</th>
-            <th>Assumido</th>
-            <th>Aberto</th>
-            <th>Preço</th>
-            <th>Subtotal</th>
-            {podeAssumir && <th>Assumir</th>}
+            <th className="num">Pedido</th>
+            <th className="num">Em produção</th>
+            <th className="num">Falta produzir</th>
+            <th className="num">Preço unit.</th>
+            <th className="num">Subtotal</th>
+            {podeAssumir && <th className="num">Eu vou fabricar</th>}
           </tr>
         </thead>
         <tbody>
@@ -278,7 +300,7 @@ export default function PedidoDetalhe() {
                           const v = Math.min(aberto, Math.max(0, Number(e.target.value) || 0));
                           setNovoClaim(c => ({ ...c, [it.id]: v }));
                         }} />
-                    ) : <span className="muted small">—</span>}
+                    ) : <span className="muted small">completo</span>}
                   </td>
                 )}
               </tr>
@@ -287,36 +309,42 @@ export default function PedidoDetalhe() {
         </tbody>
       </table>
 
-      {/* ---------- Formulário de claim ---------- */}
+      {/* ---------- Formulário Começar a produção ---------- */}
       {podeAssumir && (
         <div className="card mt-3" style={{ borderColor: 'var(--ouro-medio)' }}>
-          <h3 className="mt-0">Assumir Produção</h3>
+          <h3 className="mt-0">Quero começar a produzir</h3>
+          <p className="muted small mt-0">
+            1. Na tabela acima, escreva quantas unidades de cada produto <strong>você</strong> vai fabricar.<br />
+            2. Aqui embaixo, escolha a data em que pretende entregar tudo no baú.<br />
+            3. Confira sua remuneração e confirme.
+          </p>
           <p className="muted small">
-            Marque as quantidades que você consegue produzir na tabela acima.
-            A Fazenda retém {(COMISSAO_PCT*100).toFixed(0)}% — você recebe {(TRABALHADOR_PCT*100).toFixed(0)}% do bruto.
+            A Fazenda retém {(COMISSAO_PCT*100).toFixed(0)}% de comissão · você recebe {(TRABALHADOR_PCT*100).toFixed(0)}% do bruto.
           </p>
           <div className="row mt-2">
             <div className="field" style={{ flex: '1 1 260px' }}>
-              <label>Data prevista de entrega</label>
+              <label>Quando você vai entregar no baú?</label>
               <input type="datetime-local" value={dataPrevista} onChange={e => setDataPrevista(e.target.value)} />
             </div>
             <div className="stat" style={{ flex: '1 1 240px' }}>
-              <div className="label">Sua remuneração</div>
+              <div className="label">Você vai receber</div>
               <div className="value" style={{ color: 'var(--verde-livro)' }}>{fmt(totalClaimSelecionado * TRABALHADOR_PCT)}</div>
-              <div className="hint">Bruto {fmt(totalClaimSelecionado)} · Comissão −{fmt(totalClaimSelecionado * COMISSAO_PCT)}</div>
+              <div className="hint">Bruto {fmt(totalClaimSelecionado)} · Comissão Fazenda −{fmt(totalClaimSelecionado * COMISSAO_PCT)}</div>
             </div>
           </div>
           <button className="btn lg" disabled={criandoClaim || totalClaimSelecionado === 0} onClick={criarClaim}>
-            {criandoClaim ? 'Salvando…' : '✔ Confirmar Produção'}
+            {criandoClaim ? 'Salvando…' : '✔ Começar a Produzir'}
           </button>
           {erro && <p className="mt-2" style={{ color: 'var(--vermelho)' }}>{erro}</p>}
         </div>
       )}
 
       {/* ---------- Trabalhadores na produção ---------- */}
-      <h2 className="mt-3">Produção ({claims.length})</h2>
+      <h2 className="mt-3">Quem está produzindo ({claims.length})</h2>
       {claims.length === 0 ? (
-        <div className="card"><p className="muted it small mt-0">Nenhum trabalhador assumiu itens ainda. Compartilhe o link no Discord para chamar a galera.</p></div>
+        <div className="card"><p className="muted it small mt-0">
+          Ninguém assumiu nenhum item ainda. Use o botão <strong>💬 Discord</strong> no topo para chamar a galera.
+        </p></div>
       ) : (
         <div className="stack">
           {claims.map(c => {
@@ -335,10 +363,10 @@ export default function PedidoDetalhe() {
                   <div className="flex gap-1 center-y wrap">
                     <span className={`badge ${c.status}`}>{statusLabel(c.status)}</span>
                     {isOwnerClaim && c.status === 'em_producao' && (
-                      <button className="btn success sm" onClick={() => marcarEntregue(c)}>✔ Confirmar entrega</button>
+                      <button className="btn success sm" onClick={() => marcarEntregue(c)}>✔ Entreguei no baú</button>
                     )}
                     {isManager && c.status === 'entregue' && (
-                      <button className="btn sm" onClick={() => marcarPago(c)}>💰 Marcar Pago</button>
+                      <button className="btn sm" onClick={() => marcarPago(c)}>💰 Confirmar Pagamento</button>
                     )}
                   </div>
                 </div>

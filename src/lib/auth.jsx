@@ -3,6 +3,14 @@ import { supabase } from './supabase.js';
 
 const AuthContext = createContext(null);
 
+/** Aguarda a promise, mas resolve com fallback se demorar mais que ms. */
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -11,11 +19,11 @@ export function AuthProvider({ children }) {
   const loadProfile = useCallback(async (userId) => {
     if (!userId) { setProfile(null); return; }
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      const { data, error } = await withTimeout(
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        5000,
+        { data: null, error: { message: 'timeout' } }
+      );
       if (error) {
         console.error('loadProfile error:', error);
         setProfile(null);
@@ -32,12 +40,16 @@ export function AuthProvider({ children }) {
     let mounted = true;
     (async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        const { data } = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          { data: { session: null } }
+        );
         if (!mounted) return;
         setSession(data.session);
         await loadProfile(data.session?.user?.id);
       } catch (e) {
-        console.error('getSession error:', e);
+        console.error('getSession exception:', e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -76,7 +88,6 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => useContext(AuthContext);
 
-/** Profile completo = todos os campos obrigatórios preenchidos. */
 export function isProfileComplete(p) {
   return p && p.nome_completo && p.identificacao && p.discord_handle && p.conta_bancaria;
 }

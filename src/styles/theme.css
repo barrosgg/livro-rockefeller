@@ -46,7 +46,7 @@ body {
   background:
     radial-gradient(1400px 900px at 50% -300px, #6b5520 0%, var(--bg-1) 50%, var(--bg-2) 100%);
   color: var(--tinta);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -128,7 +128,7 @@ h3 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
 .topbar nav { display: flex; gap: 4px; flex-wrap: wrap; }
 .topbar nav a {
   color: rgba(245,236,208,.78);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .9rem;
   font-weight: 500;
   letter-spacing: .02em;
@@ -147,7 +147,7 @@ h3 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
 /* ---------- Botões ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .88rem;
   font-weight: 600;
   letter-spacing: .02em;
@@ -187,7 +187,7 @@ h3 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
 /* ---------- Inputs ---------- */
 .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .field label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .72rem;
   font-weight: 600;
   letter-spacing: .08em;
@@ -197,7 +197,7 @@ h3 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; }
 .field .hint { font-size: .78rem; color: var(--tinta-mute); }
 input[type="text"], input[type="number"], input[type="datetime-local"],
 input[type="email"], input[type="password"], textarea, select {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .95rem;
   background: #fff;
   border: 1px solid var(--page-edge);
@@ -219,7 +219,7 @@ select { cursor: pointer; }
 table.book {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .92rem;
 }
 table.book th, table.book td {
@@ -247,7 +247,7 @@ table.book .num, .num {
 /* ---------- Badges de status ---------- */
 .badge {
   display: inline-block;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: .7rem;
   font-weight: 600;
   letter-spacing: .06em;
@@ -380,6 +380,78 @@ table.book .num, .num {
 }
 .combo-list .opt:hover, .combo-list .opt.active { background: rgba(212,171,77,.18); }
 .combo-list .opt .price { color: var(--tinta-mute); font-size: .78rem; font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- Status Timeline (stepper) ---------- */
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 8px 4px;
+  overflow-x: auto;
+}
+.timeline .step {
+  flex: 1 1 0;
+  min-width: 90px;
+  display: flex; flex-direction: column; align-items: center;
+  position: relative;
+  text-align: center;
+}
+.timeline .step + .step::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: -50%; right: 50%;
+  height: 2px;
+  background: var(--page-edge);
+  z-index: 0;
+}
+.timeline .step.done + .step::before,
+.timeline .step.current + .step::before { background: var(--ouro); }
+.timeline .dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--page-soft);
+  border: 2px solid var(--page-edge);
+  display: grid; place-items: center;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--tinta-mute);
+  z-index: 1;
+  position: relative;
+}
+.timeline .step.done .dot {
+  background: var(--verde-livro);
+  border-color: var(--verde-livro);
+  color: var(--page-soft);
+}
+.timeline .step.current .dot {
+  background: var(--ouro);
+  border-color: var(--ouro-prof);
+  color: #2a1f10;
+  box-shadow: 0 0 0 4px rgba(212,171,77,.25);
+}
+.timeline .step.cancelado .dot {
+  background: var(--vermelho);
+  border-color: var(--vermelho);
+  color: #fff;
+}
+.timeline .label {
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--tinta-mute);
+  margin-top: 6px;
+  line-height: 1.2;
+}
+.timeline .step.done .label,
+.timeline .step.current .label { color: var(--tinta); }
+.timeline .when {
+  font-size: .7rem;
+  color: var(--tinta-mute);
+  margin-top: 2px;
+}
 
 /* ---------- Toast leve ---------- */
 .toast {
