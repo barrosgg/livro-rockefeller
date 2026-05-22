@@ -1,4 +1,5 @@
 import Avatar from './Avatar.jsx';
+import { BADGES } from '../lib/badges.js';
 
 const ROLE_LABELS = {
   proprietario: 'Proprietário',
@@ -76,6 +77,25 @@ export default function Credencial({ profile }) {
           </div>
         </div>
       </div>
+
+      {(() => {
+        const extras = profile?.badges_extras || [];
+        const ganhas = BADGES.filter(b => extras.includes(b.id));
+        if (ganhas.length === 0) return null;
+        return (
+          <div className="credencial-conquistas">
+            <span className="credencial-conquistas-label">Conquistas</span>
+            <div className="credencial-conquistas-grid">
+              {ganhas.map(b => (
+                <span key={b.id} className="credencial-conquista" title={`${b.nome} — ${b.desc}`}>
+                  <span className="credencial-conquista-emoji">{b.emoji}</span>
+                  <span className="credencial-conquista-nome">{b.nome}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       <footer className="credencial-footer">
         <div className="credencial-assinatura">

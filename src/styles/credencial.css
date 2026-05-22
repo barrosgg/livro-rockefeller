@@ -266,6 +266,61 @@
   color: var(--ink-faded);
 }
 
+/* Conquistas (badges) — faixa de méritos */
+.credencial-conquistas {
+  margin-top: 18px;
+  padding: 14px 16px 10px;
+  background: rgba(176,141,61,.06);
+  border: 1px solid rgba(176,141,61,.3);
+  border-radius: var(--r-sm);
+  position: relative;
+}
+.credencial-conquistas-label {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: .65rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.credencial-conquistas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.credencial-conquista {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: var(--paper);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  font-size: .78rem;
+  font-family: 'Lora', serif;
+  color: var(--ink);
+  cursor: help;
+  transition: transform .12s;
+}
+.credencial-conquista:hover { transform: translateY(-1px); }
+.credencial-conquista-emoji {
+  font-size: 1rem;
+  line-height: 1;
+}
+.credencial-conquista-nome {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .credencial-conquistas-grid { gap: 6px; }
+  .credencial-conquista { padding: 4px 8px; font-size: .72rem; }
+  .credencial-conquista-nome { display: none; }
+  .credencial-conquista-emoji { font-size: 1.1rem; }
+}
+
 /* Rodapé com selo + assinatura */
 .credencial-footer {
   margin-top: 28px;
