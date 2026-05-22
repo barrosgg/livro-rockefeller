@@ -138,8 +138,8 @@ alter table order_items   enable row level security;
 alter table claims        enable row level security;
 alter table claim_items   enable row level security;
 
--- Helper: role do usuário atual
-create or replace function public.current_role()
+-- Helper: role do usuário atual (não pode chamar de current_role — é função reservada do Postgres)
+create or replace function public.app_role()
 returns user_role language sql stable security definer set search_path = public as $$
   select role from profiles where id = auth.uid()
 $$;
@@ -157,7 +157,7 @@ create policy profiles_update_self on profiles
 
 drop policy if exists profiles_update_owner on profiles;
 create policy profiles_update_owner on profiles
-  for update using (current_role() = 'proprietario');
+  for update using (app_role() = 'proprietario');
 
 -- ----- products -----
 drop policy if exists products_select on products;
@@ -165,8 +165,8 @@ create policy products_select on products for select using (auth.role() = 'authe
 
 drop policy if exists products_write on products;
 create policy products_write on products for all
-  using (current_role() in ('proprietario','gerente'))
-  with check (current_role() in ('proprietario','gerente'));
+  using (app_role() in ('proprietario','gerente'))
+  with check (app_role() in ('proprietario','gerente'));
 
 -- ----- orders -----
 drop policy if exists orders_select on orders;
@@ -174,11 +174,11 @@ create policy orders_select on orders for select using (auth.role() = 'authentic
 
 drop policy if exists orders_insert_gerente on orders;
 create policy orders_insert_gerente on orders for insert
-  with check (current_role() in ('proprietario','gerente') and criado_por = auth.uid());
+  with check (app_role() in ('proprietario','gerente') and criado_por = auth.uid());
 
 drop policy if exists orders_update_gerente on orders;
 create policy orders_update_gerente on orders for update
-  using (current_role() in ('proprietario','gerente'));
+  using (app_role() in ('proprietario','gerente'));
 
 -- ----- order_items -----
 drop policy if exists order_items_select on order_items;
@@ -186,8 +186,8 @@ create policy order_items_select on order_items for select using (auth.role() = 
 
 drop policy if exists order_items_write_gerente on order_items;
 create policy order_items_write_gerente on order_items for all
-  using (current_role() in ('proprietario','gerente'))
-  with check (current_role() in ('proprietario','gerente'));
+  using (app_role() in ('proprietario','gerente'))
+  with check (app_role() in ('proprietario','gerente'));
 
 -- ----- claims -----
 drop policy if exists claims_select on claims;
@@ -203,7 +203,7 @@ create policy claims_update_self on claims for update
 
 drop policy if exists claims_update_gerente on claims;
 create policy claims_update_gerente on claims for update
-  using (current_role() in ('proprietario','gerente'));
+  using (app_role() in ('proprietario','gerente'));
 
 -- ----- claim_items -----
 drop policy if exists claim_items_select on claim_items;
@@ -215,14 +215,14 @@ create policy claim_items_write on claim_items for all
     exists (
       select 1 from claims c
       where c.id = claim_items.claim_id
-        and (c.trabalhador_id = auth.uid() or current_role() in ('proprietario','gerente'))
+        and (c.trabalhador_id = auth.uid() or app_role() in ('proprietario','gerente'))
     )
   )
   with check (
     exists (
       select 1 from claims c
       where c.id = claim_items.claim_id
-        and (c.trabalhador_id = auth.uid() or current_role() in ('proprietario','gerente'))
+        and (c.trabalhador_id = auth.uid() or app_role() in ('proprietario','gerente'))
     )
   );
 
