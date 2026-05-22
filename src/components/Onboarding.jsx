@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
+import { useFocusTrap } from '../lib/a11y.js';
 
 const ROLE_DESC = {
   proprietario: {
@@ -22,6 +23,7 @@ export default function Onboarding({ profile, onClose }) {
   const [step, setStep] = useState(0);
   const role = profile?.role || 'trabalhador';
   const roleInfo = ROLE_DESC[role] || ROLE_DESC.trabalhador;
+  const modalRef = useFocusTrap(true);
 
   const finalizar = async (paraContrato = false) => {
     await supabase.from('profiles')
@@ -104,7 +106,7 @@ export default function Onboarding({ profile, onClose }) {
 
   return (
     <div className="onboarding-backdrop" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-      <div className="onboarding-modal">
+      <div className="onboarding-modal" ref={modalRef}>
         <div className="onboarding-progress">
           {slides.map((_, i) => (
             <span key={i} className={`onboarding-dot ${i === step ? 'active' : ''} ${i < step ? 'done' : ''}`} />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth, isProfileComplete } from './lib/auth.jsx';
+import { useUI } from './lib/ui.jsx';
 import Login from './pages/Login.jsx';
 import Perfil from './pages/Perfil.jsx';
 import Pedidos from './pages/Pedidos.jsx';
@@ -14,13 +15,22 @@ import CredencialPublica from './pages/CredencialPublica.jsx';
 import ReciboPublico from './pages/ReciboPublico.jsx';
 import Avatar from './components/Avatar.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import ScrollToTop from './components/ScrollToTop.jsx';
 import './styles/onboarding.css';
 
 function Topbar() {
   const { profile, signOut } = useAuth();
+  const { confirmar } = useUI() || {};
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
   const [menuOpen, setMenuOpen] = useState(false);
   const loc = useLocation();
+
+  const handleSair = async () => {
+    const ok = await confirmar?.(
+      'Você será desconectado e voltará à tela de login.',
+      { title: 'Sair da Fazenda?', confirmLabel: 'Sim, sair' });
+    if (ok) signOut();
+  };
 
   // Fecha o menu ao trocar de rota
   useEffect(() => { setMenuOpen(false); }, [loc.pathname]);
@@ -57,7 +67,7 @@ function Topbar() {
         <Avatar slug={profile?.avatar} name={profile?.nome_completo || profile?.discord_handle} size={32} />
         <span className="name">{profile?.nome_completo || profile?.discord_handle || '...'}</span>
         {profile?.role && <span className={`badge ${profile.role}`}>{profile.role}</span>}
-        <button type="button" className="btn ghost sm" onClick={signOut}>Sair</button>
+        <button type="button" className="btn ghost sm" onClick={handleSair}>Sair</button>
       </div>
     </header>
   );
@@ -115,6 +125,8 @@ export default function App() {
   if (loading) return <div className="login-wrap"><div className="page login-card">Carregando…</div></div>;
 
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/pedidos" replace /> : <Login />} />
       {/* Rotas públicas — sem auth */}
@@ -133,5 +145,6 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 }

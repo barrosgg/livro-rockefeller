@@ -281,10 +281,10 @@ export default function PedidoDetalhe() {
         </div>
         <div className="flex gap-1 center-y wrap">
           <span className={`badge ${pedido.status}`}>{statusLabel(pedido.status)}</span>
-          <button className="btn ghost sm" onClick={() => copiar(urlPedido, 'Link interno copiado.')}>📎 Link</button>
-          <button className="btn ghost sm" onClick={() => copiar(mensagemDiscord(), 'Mensagem Discord copiada.')}>💬 Discord</button>
+          <button type="button" aria-label="Copiar link interno do pedido" className="btn ghost sm" onClick={() => copiar(urlPedido, 'Link interno copiado.')}>📎 Link</button>
+          <button type="button" aria-label="Copiar mensagem formatada para Discord" className="btn ghost sm" onClick={() => copiar(mensagemDiscord(), 'Mensagem Discord copiada.')}>💬 Discord</button>
           {urlPublico && (
-            <button className="btn ghost sm" onClick={() => copiar(urlPublico, 'Link público do cliente copiado.')}>
+            <button type="button" aria-label="Copiar link público para o cliente" className="btn ghost sm" onClick={() => copiar(urlPublico, 'Link público do cliente copiado.')}>
               👁 Link p/ Cliente
             </button>
           )}

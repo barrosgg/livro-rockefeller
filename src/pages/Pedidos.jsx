@@ -15,7 +15,7 @@ export default function Pedidos() {
 
   const [pedidos, setPedidos] = useState([]);
   const [filtro, setFiltro] = useLocalStorage('pedidos:filtro', 'todos');
-  const [busca, setBusca] = useState('');
+  const [busca, setBusca] = useLocalStorage('pedidos:busca', '');
   const [loading, setLoading] = useState(true);
   const [selecionados, setSelecionados] = useState(new Set());
 

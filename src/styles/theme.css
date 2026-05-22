@@ -849,6 +849,25 @@ kbd {
 }
 
 @media (max-width: 640px) {
+  /* KPIs viram coluna unica */
+  .grid-3 { grid-template-columns: 1fr; }
+
+  /* Conquistas: 1 por linha */
+  .conquistas-grid { grid-template-columns: 1fr; }
+
+  /* Tabs do Admin: scroll horizontal sem quebrar */
+  .page > .flex.gap-1.wrap.mt-2 {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .page > .flex.gap-1.wrap.mt-2 > .btn { flex-shrink: 0; }
+
+  /* QuickAdd: presets de quantidade quebram em 2 linhas mais arejadas */
+  .field + .flex.gap-1.wrap > .btn.sm { min-width: 48px; }
+
   .topbar-hamburger { display: inline-flex; order: 2; }
   .topbar .user .name { display: none; }
   .topbar .user .badge { display: none; }

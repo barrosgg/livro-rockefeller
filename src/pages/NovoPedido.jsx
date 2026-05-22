@@ -175,6 +175,17 @@ export default function NovoPedido() {
     navigate(`/pedidos/${order.short_code || order.id}`);
   }, [itens, prazo, numero, cliente, anotacoes, calc.pctEfetivo, user, limparDraft, navigate]);
 
+  /* Aviso ao fechar/recarregar com itens não enviados */
+  useEffect(() => {
+    if (itens.length === 0) return;
+    const onBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [itens.length]);
+
   /* ---- Atalhos globais ---- */
   useEffect(() => {
     const onKey = (e) => {

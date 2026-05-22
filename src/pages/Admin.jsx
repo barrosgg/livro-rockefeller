@@ -540,6 +540,7 @@ function AuditTab() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState('todos');
+  const [visiveis, setVisiveis] = useState(50);
 
   useEffect(() => {
     supabase.from('audit_log')
@@ -558,7 +559,12 @@ function AuditTab() {
     return eventos.filter(e => e.entity_type === filtro);
   }, [eventos, filtro]);
 
-  if (loading) return <p className="muted">Carregando…</p>;
+  // Reset paginação ao mudar filtro
+  useEffect(() => { setVisiveis(50); }, [filtro]);
+
+  const exibidos = filtrados.slice(0, visiveis);
+
+  if (loading) return <p className="muted" aria-live="polite">Carregando…</p>;
 
   return (
     <>
@@ -569,16 +575,22 @@ function AuditTab() {
           </button>
         ))}
       </div>
-      <p className="muted small mt-2">Últimos 500 eventos.</p>
+      <p className="muted small mt-2">
+        Mostrando {exibidos.length} de {filtrados.length} eventos (últimos 500).
+      </p>
       {filtrados.length === 0 ? (
-        <div className="card"><p className="muted it mt-0">Nenhum evento.</p></div>
+        <div className="empty-state">
+          <div className="empty-state-icon">📋</div>
+          <h3 className="mt-0">Nenhum evento neste filtro</h3>
+          <p className="muted">Tente outro filtro acima.</p>
+        </div>
       ) : (
-        <table className="book mt-2">
+        <table className="book mt-2" aria-label="Eventos de auditoria">
           <thead>
             <tr><th style={{ width: 160 }}>Quando</th><th style={{ width: 220 }}>Quem</th><th>Evento</th><th>Detalhes</th></tr>
           </thead>
           <tbody>
-            {filtrados.map(e => (
+            {exibidos.map(e => (
               <tr key={e.id}>
                 <td className="small muted">{new Date(e.criado_em).toLocaleString('pt-BR')}</td>
                 <td className="small">
@@ -594,6 +606,14 @@ function AuditTab() {
             ))}
           </tbody>
         </table>
+      )}
+      {exibidos.length < filtrados.length && (
+        <div className="center mt-2">
+          <button type="button" className="btn ghost"
+            onClick={() => setVisiveis(v => v + 50)}>
+            Carregar mais 50 eventos ({filtrados.length - exibidos.length} restantes)
+          </button>
+        </div>
       )}
     </>
   );

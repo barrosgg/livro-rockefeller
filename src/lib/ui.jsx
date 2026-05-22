@@ -1,5 +1,6 @@
 /* Sistema global de Toast + ConfirmDialog. */
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useFocusTrap } from './a11y.js';
 
 const UIContext = createContext(null);
 
@@ -60,24 +61,7 @@ export function UIProvider({ children }) {
       </div>
 
       {/* Modal de confirmação */}
-      {confirm && (
-        <div className="confirm-backdrop" onClick={confirm.onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-          <div className="confirm-modal" onClick={e => e.stopPropagation()}>
-            <h3 id="confirm-title" className="mt-0">{confirm.title}</h3>
-            <p className="confirm-msg">{confirm.msg}</p>
-            <div className="flex gap-1 mt-2" style={{ justifyContent: 'flex-end' }}>
-              <button className="btn ghost" onClick={confirm.onCancel} autoFocus>
-                {confirm.cancelLabel}
-              </button>
-              <button
-                className={`btn ${confirm.danger ? 'danger' : ''}`}
-                onClick={confirm.onConfirm}>
-                {confirm.confirmLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {confirm && <ConfirmModal confirm={confirm} />}
     </UIContext.Provider>
   );
 }
@@ -85,3 +69,26 @@ export function UIProvider({ children }) {
 export const useUI = () => useContext(UIContext);
 export const useToast = () => useContext(UIContext)?.showToast;
 export const useConfirm = () => useContext(UIContext)?.confirmar;
+
+function ConfirmModal({ confirm }) {
+  const modalRef = useFocusTrap(true);
+  return (
+    <div className="confirm-backdrop" onClick={confirm.onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div className="confirm-modal" ref={modalRef} onClick={e => e.stopPropagation()}>
+        <h3 id="confirm-title" className="mt-0">{confirm.title}</h3>
+        <p className="confirm-msg">{confirm.msg}</p>
+        <div className="flex gap-1 mt-2" style={{ justifyContent: 'flex-end' }}>
+          <button type="button" className="btn ghost" onClick={confirm.onCancel}>
+            {confirm.cancelLabel}
+          </button>
+          <button
+            type="button"
+            className={`btn ${confirm.danger ? 'danger' : ''}`}
+            onClick={confirm.onConfirm}>
+            {confirm.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

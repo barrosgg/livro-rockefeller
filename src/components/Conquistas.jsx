@@ -44,9 +44,12 @@ async function carregarStats(userId, workerPct) {
   const idx = ranking.findIndex(([id]) => id === userId);
   const posicao_ranking = idx >= 0 ? idx + 1 : null;
 
-  const dias_desde_inicio = profile?.criado_em
-    ? Math.floor((Date.now() - new Date(profile.criado_em).getTime()) / 86400000)
-    : 0;
+  const dias_desde_inicio = (() => {
+    if (!profile?.criado_em) return 0;
+    const ts = new Date(profile.criado_em).getTime();
+    if (isNaN(ts)) return 0;
+    return Math.floor((Date.now() - ts) / 86400000);
+  })();
 
   return {
     claims_total: claimsPagos.length,

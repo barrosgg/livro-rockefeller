@@ -88,13 +88,13 @@ function CredencialView({ profile, onEdit, onContratoAssinado }) {
           <Credencial profile={profile} />
 
           <div className="mt-2 center flex gap-1" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn" onClick={onEdit}>Editar Credencial</button>
-            <button className="btn ghost" onClick={baixarCredencial}>⬇ Baixar PNG</button>
+            <button type="button" className="btn" onClick={onEdit}>Editar Credencial</button>
+            <button type="button" aria-label="Baixar credencial como imagem PNG" className="btn ghost" onClick={baixarCredencial}>⬇ Baixar PNG</button>
             {url && (
-              <button className="btn ghost" onClick={copiar}>📎 Copiar link público</button>
+              <button type="button" aria-label="Copiar link público da credencial" className="btn ghost" onClick={copiar}>📎 Copiar link público</button>
             )}
             {url && (
-              <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer">
+              <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer" aria-label="Visualizar credencial em nova aba">
                 👁 Visualizar
               </a>
             )}
