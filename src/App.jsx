@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth, isProfileComplete } from './lib/auth.jsx';
 import Login from './pages/Login.jsx';
@@ -15,27 +16,44 @@ import Avatar from './components/Avatar.jsx';
 function Topbar() {
   const { profile, signOut } = useAuth();
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
+  const [menuOpen, setMenuOpen] = useState(false);
+  const loc = useLocation();
+
+  // Fecha o menu ao trocar de rota
+  useEffect(() => { setMenuOpen(false); }, [loc.pathname]);
+
   return (
     <header className="topbar">
       <a href="/" className="brand" style={{ display: 'inline-flex', alignItems: 'center', borderBottom: 'none' }}>
         <img
           src="/familia-rockefeller.png"
-          alt="Família Rockefeller"
+          alt="Logo Família Rockefeller"
           style={{ height: 52, width: 'auto', display: 'block' }}
         />
       </a>
-      <nav>
+
+      <button
+        type="button"
+        className="topbar-hamburger"
+        aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen(v => !v)}>
+        <span /><span /><span />
+      </button>
+
+      <nav className={`topbar-nav ${menuOpen ? 'open' : ''}`}>
         <NavLink to="/pedidos" className={({isActive}) => isActive ? 'active' : ''}>Pedidos</NavLink>
         {isManager && <NavLink to="/novo" className={({isActive}) => isActive ? 'active' : ''}>Novo Pedido</NavLink>}
         <NavLink to="/meus" className={({isActive}) => isActive ? 'active' : ''}>Meus Trabalhos</NavLink>
         <NavLink to="/perfil" className={({isActive}) => isActive ? 'active' : ''}>Perfil</NavLink>
         {profile?.role === 'proprietario' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin</NavLink>}
       </nav>
+
       <div className="user">
         <Avatar slug={profile?.avatar} name={profile?.nome_completo || profile?.discord_handle} size={32} />
         <span className="name">{profile?.nome_completo || profile?.discord_handle || '...'}</span>
         {profile?.role && <span className={`badge ${profile.role}`}>{profile.role}</span>}
-        <button className="btn ghost sm" onClick={signOut}>Sair</button>
+        <button type="button" className="btn ghost sm" onClick={signOut}>Sair</button>
       </div>
     </header>
   );

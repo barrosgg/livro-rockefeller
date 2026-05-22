@@ -2,16 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
+import { useUI } from '../lib/ui.jsx';
+import { useLocalStorage } from '../lib/storage.js';
 import { statusLabel } from '../lib/calc.js';
 
 const STATUS_FILTROS = ['todos','rascunho','aprovado','em_producao','entregue','pago','concluido','cancelado'];
 
 export default function Pedidos() {
   const { profile } = useAuth();
+  const { showToast, confirmar } = useUI() || {};
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
 
   const [pedidos, setPedidos] = useState([]);
-  const [filtro, setFiltro] = useState('todos');
+  const [filtro, setFiltro] = useLocalStorage('pedidos:filtro', 'todos');
   const [busca, setBusca] = useState('');
   const [loading, setLoading] = useState(true);
   const [selecionados, setSelecionados] = useState(new Set());
@@ -67,23 +70,39 @@ export default function Pedidos() {
   const aprovarLote = async () => {
     const semPrazo = selArr.filter(p => !p.prazo_entrega);
     if (semPrazo.length > 0) {
-      alert(`${semPrazo.length} pedido(s) sem prazo definido. Defina o prazo antes de aprovar em lote.`);
+      showToast?.(
+        `${semPrazo.length} pedido(s) sem prazo definido. Abra cada um e defina o prazo antes de aprovar em lote.`,
+        { type: 'error', duration: 5000 });
       return;
     }
-    if (!confirm(`Aprovar ${selArr.length} pedido(s)?`)) return;
+    const ok = await confirmar?.(
+      `${selArr.length} pedido(s) serão aprovados e enviados à produção.`,
+      { title: 'Aprovar em lote?', confirmLabel: `Aprovar ${selArr.length}` });
+    if (!ok) return;
     const ids = [...selecionados];
     const { error } = await supabase.from('orders').update({
       status: 'aprovado',
       aprovado_em: new Date().toISOString(),
     }).in('id', ids);
-    if (error) alert(error.message); else { setSelecionados(new Set()); carregar(); }
+    if (error) showToast?.(error.message, { type: 'error' });
+    else {
+      showToast?.(`${selArr.length} pedido(s) aprovados.`, { type: 'success' });
+      setSelecionados(new Set()); carregar();
+    }
   };
 
   const cancelarLote = async () => {
-    if (!confirm(`Cancelar ${selArr.length} pedido(s)?`)) return;
+    const ok = await confirmar?.(
+      `${selArr.length} pedido(s) serão cancelados. Trabalhadores não poderão mais assumir produção destes pedidos.`,
+      { title: 'Cancelar em lote?', danger: true, confirmLabel: `Cancelar ${selArr.length}` });
+    if (!ok) return;
     const ids = [...selecionados];
     const { error } = await supabase.from('orders').update({ status: 'cancelado' }).in('id', ids);
-    if (error) alert(error.message); else { setSelecionados(new Set()); carregar(); }
+    if (error) showToast?.(error.message, { type: 'error' });
+    else {
+      showToast?.(`${selArr.length} pedido(s) cancelados.`, { type: 'info' });
+      setSelecionados(new Set()); carregar();
+    }
   };
 
   return (
@@ -128,14 +147,28 @@ export default function Pedidos() {
       <hr className="divider" />
 
       {loading ? <p className="muted">Carregando…</p> : lista.length === 0 ? (
-        <div className="card center"><p className="muted it">Nenhum pedido encontrado.</p></div>
+        <div className="empty-state">
+          <div className="empty-state-icon">📜</div>
+          <h3 className="mt-0">Nenhum pedido encontrado</h3>
+          <p className="muted">
+            {busca || filtro !== 'todos'
+              ? 'Tente outro filtro ou outra busca.'
+              : isManager
+                ? 'Comece criando um novo pedido para a Fazenda.'
+                : 'Quando houver pedidos aprovados, eles aparecerão aqui.'}
+          </p>
+          {!busca && filtro === 'todos' && isManager && (
+            <Link className="btn mt-2" to="/novo">Criar Novo Pedido</Link>
+          )}
+        </div>
       ) : (
-        <table className="book">
+        <table className="book responsive">
           <thead>
             <tr>
               {isManager && (
                 <th style={{ width: 36 }}>
                   <input type="checkbox"
+                    aria-label="Selecionar todos os pedidos"
                     checked={selecionados.size === lista.length && lista.length > 0}
                     onChange={toggleAll} />
                 </th>
@@ -152,18 +185,19 @@ export default function Pedidos() {
             {lista.map(p => (
               <tr key={p.id} style={selecionados.has(p.id) ? { background: 'rgba(176,141,61,.10)' } : null}>
                 {isManager && (
-                  <td>
+                  <td data-label="Selecionar">
                     <input type="checkbox"
+                      aria-label={`Selecionar pedido Nº ${p.numero_nota}`}
                       checked={selecionados.has(p.id)}
                       onChange={() => toggleSel(p.id)} />
                   </td>
                 )}
-                <td className="num">Nº {p.numero_nota}</td>
-                <td>{p.cliente || <span className="muted">—</span>}</td>
-                <td><span className={`badge ${p.status}`}>{statusLabel(p.status)}</span></td>
-                <td>{p.prazo_entrega ? new Date(p.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">—</span>}</td>
-                <td>{new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>
-                <td><Link className="btn ghost sm" to={`/pedidos/${p.short_code || p.id}`}>abrir</Link></td>
+                <td className="num" data-label="Nº Nota">Nº {p.numero_nota}</td>
+                <td data-label="Cliente">{p.cliente || <span className="muted">—</span>}</td>
+                <td data-label="Status"><span className={`badge ${p.status}`}>{statusLabel(p.status)}</span></td>
+                <td data-label="Prazo">{p.prazo_entrega ? new Date(p.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">—</span>}</td>
+                <td data-label="Criado">{new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td data-label=""><Link className="btn ghost sm" to={`/pedidos/${p.short_code || p.id}`}>abrir</Link></td>
               </tr>
             ))}
           </tbody>

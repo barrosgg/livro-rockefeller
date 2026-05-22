@@ -20,14 +20,36 @@ export default function MeusTrabalhos() {
       .then(({ data }) => { setClaims(data || []); setLoading(false); });
   }, [user]);
 
-  if (loading) return <div className="page">Carregando…</div>;
+  if (loading) return (
+    <div className="page">
+      <h1 className="mt-0">Meus Trabalhos</h1>
+      <hr className="divider" />
+      <div>
+        {[1,2,3].map(i => (
+          <div key={i} className="skeleton-row">
+            <div className="skeleton skeleton-line medium" />
+            <div className="skeleton skeleton-line short" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="page">
       <h1 className="mt-0">Meus Trabalhos</h1>
       <p className="muted">Histórico das produções que você assumiu, status e remuneração.</p>
       <div className="divider" />
-      {claims.length === 0 ? <p className="muted">Você ainda não assumiu nenhuma produção.</p> : (
+      {claims.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">🌾</div>
+          <h3 className="mt-0">Nenhuma produção ainda</h3>
+          <p className="muted">
+            Vá em <strong>Pedidos</strong> e assuma sua primeira produção. O histórico e remuneração aparecem aqui.
+          </p>
+          <Link className="btn mt-2" to="/pedidos">Ver Pedidos disponíveis</Link>
+        </div>
+      ) : (
         <table className="book">
           <thead>
             <tr><th>Pedido</th><th>Itens</th><th>Bruto</th><th>Líquido ({(TRABALHADOR_PCT*100).toFixed(0)}%)</th><th>Status</th><th>Prevista</th><th></th></tr>

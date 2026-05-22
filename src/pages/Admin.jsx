@@ -4,6 +4,7 @@ import { useSettings, useCategorias } from '../lib/settings.jsx';
 import { useAuth } from '../lib/auth.jsx';
 import { fmt, statusLabel } from '../lib/calc.js';
 import { toCsv, downloadCsv } from '../lib/csv.js';
+import { useUI } from '../lib/ui.jsx';
 import Avatar from '../components/Avatar.jsx';
 import ProductIcon from '../components/ProductIcon.jsx';
 
@@ -26,6 +27,7 @@ function Tabs({ value, onChange, options }) {
 /* ========================= USUÁRIOS ========================= */
 function UsuariosTab() {
   const { user: me } = useAuth();
+  const { showToast, confirmar } = useUI() || {};
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -40,23 +42,28 @@ function UsuariosTab() {
     const { error } = await supabase.from('profiles')
       .update({ nome_completo, identificacao, discord_handle, conta_bancaria, correio: correio || null })
       .eq('id', id);
-    if (error) { alert(error.message); return; }
+    if (error) { showToast?.(error.message, { type: 'error' }); return; }
     setEditing(null);
-    setMsg({ type: 'ok', text: 'Dados atualizados.' });
+    showToast?.('Dados atualizados.', { type: 'success' });
     carregar();
   };
 
   const mudarRole = async (id, role) => {
     const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
-    if (error) alert(error.message); else carregar();
+    if (error) showToast?.(error.message, { type: 'error' });
+    else { showToast?.('Papel alterado.', { type: 'success' }); carregar(); }
   };
 
   const toggleDisabled = async (p) => {
     if (p.id === me.id && !p.disabled) {
-      if (!confirm('Você está prestes a DESABILITAR a si mesmo. Continuar?')) return;
+      const ok = await confirmar?.(
+        'Você está prestes a DESABILITAR a si mesmo. Perderá o acesso imediatamente.',
+        { title: 'Desabilitar a si mesmo?', danger: true, confirmLabel: 'Desabilitar' });
+      if (!ok) return;
     }
     const { error } = await supabase.from('profiles').update({ disabled: !p.disabled }).eq('id', p.id);
-    if (error) alert(error.message); else carregar();
+    if (error) showToast?.(error.message, { type: 'error' });
+    else carregar();
   };
 
   if (loading) return <p className="muted">Carregando…</p>;
@@ -152,6 +159,7 @@ function UsuariosTab() {
 /* ========================= PRODUTOS ========================= */
 function ProdutosTab() {
   const categorias = useCategorias();
+  const { showToast, confirmar } = useUI() || {};
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [novo, setNovo] = useState({ nome: '', categoria: '', preco_min: '', preco_max: '', icon: '' });
@@ -173,13 +181,14 @@ function ProdutosTab() {
       preco_min: Number(novo.preco_min), preco_max: Number(novo.preco_max),
       icon: novo.icon.trim() || null,
     };
-    if (!payload.nome) { alert('Nome obrigatório.'); return; }
+    if (!payload.nome) { showToast?.('Nome do produto é obrigatório.', { type: 'error' }); return; }
     if (payload.preco_min <= 0 || payload.preco_max < payload.preco_min) {
-      alert('Preço inválido.'); return;
+      showToast?.('Preço inválido — verifique mínimo e máximo.', { type: 'error' }); return;
     }
     const { error } = await supabase.from('products').insert(payload);
-    if (error) { alert(error.message); return; }
+    if (error) { showToast?.(error.message, { type: 'error' }); return; }
     setNovo({ nome: '', categoria: categorias[0] || '', preco_min: '', preco_max: '', icon: '' });
+    showToast?.('Produto adicionado.', { type: 'success' });
     carregar();
   };
 
@@ -187,19 +196,27 @@ function ProdutosTab() {
 
   const salvarEdit = async (id) => {
     const v = editVals;
-    if (Number(v.preco_min) <= 0 || Number(v.preco_max) < Number(v.preco_min)) { alert('Preço inválido.'); return; }
+    if (Number(v.preco_min) <= 0 || Number(v.preco_max) < Number(v.preco_min)) {
+      showToast?.('Preço inválido.', { type: 'error' }); return;
+    }
     const { error } = await supabase.from('products').update({
       categoria: v.categoria, preco_min: Number(v.preco_min), preco_max: Number(v.preco_max),
       icon: v.icon?.trim() || null,
     }).eq('id', id);
-    if (error) { alert(error.message); return; }
-    setEditId(null); carregar();
+    if (error) { showToast?.(error.message, { type: 'error' }); return; }
+    setEditId(null);
+    showToast?.('Produto atualizado.', { type: 'success' });
+    carregar();
   };
 
   const apagar = async (p) => {
-    if (!confirm(`Apagar "${p.nome}"?`)) return;
+    const ok = await confirmar?.(
+      `O produto "${p.nome}" será removido do catálogo. Esta ação só funciona se ele ainda não foi usado em nenhum pedido.`,
+      { title: 'Apagar produto?', danger: true, confirmLabel: 'Apagar' });
+    if (!ok) return;
     const { error } = await supabase.from('products').delete().eq('id', p.id);
-    if (error) alert(error.message); else carregar();
+    if (error) showToast?.(error.message, { type: 'error' });
+    else { showToast?.('Produto removido.', { type: 'success' }); carregar(); }
   };
 
   if (loading) return <p className="muted">Carregando…</p>;
@@ -285,7 +302,7 @@ function ProdutosTab() {
                   {editing ? (
                     <div className="flex gap-1">
                       <button className="btn sm" onClick={() => salvarEdit(p.id)}>salvar</button>
-                      <button className="btn ghost sm" onClick={() => setEditId(null)}>×</button>
+                      <button type="button" aria-label="Cancelar edição" className="btn ghost sm" onClick={() => setEditId(null)}>×</button>
                     </div>
                   ) : (
                     <div className="flex gap-1">
@@ -306,6 +323,7 @@ function ProdutosTab() {
 /* ========================= CATEGORIAS ========================= */
 function CategoriasTab() {
   const { settings, setSetting } = useSettings();
+  const { showToast: showSetToast } = useUI() || {};
   const [lista, setLista] = useState(settings.categorias || []);
   const [novo, setNovo] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -328,7 +346,7 @@ function CategoriasTab() {
   };
   const salvar = async () => {
     setSalvando(true);
-    try { await setSetting('categorias', lista); } catch (e) { alert(e.message); }
+    try { await setSetting('categorias', lista); showSetToast?.('Categorias salvas.', { type: 'success' }); } catch (e) { showSetToast?.(e.message, { type: 'error' }); }
     setSalvando(false);
   };
 
@@ -353,13 +371,13 @@ function CategoriasTab() {
               <tr key={c}>
                 <td style={{ width: 90 }}>
                   <div className="flex gap-1">
-                    <button className="btn ghost sm" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
-                    <button className="btn ghost sm" disabled={i === lista.length - 1} onClick={() => move(i, 1)}>↓</button>
+                    <button type="button" aria-label="Mover para cima" className="btn ghost sm" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+                    <button type="button" aria-label="Mover para baixo" className="btn ghost sm" disabled={i === lista.length - 1} onClick={() => move(i, 1)}>↓</button>
                   </div>
                 </td>
                 <td>{c}</td>
                 <td style={{ width: 60 }}>
-                  <button className="btn ghost sm" style={{ color: 'var(--burgundy)' }} onClick={() => remover(i)}>×</button>
+                  <button type="button" aria-label={`Remover categoria ${c}`} className="btn ghost sm" style={{ color: 'var(--burgundy)' }} onClick={() => remover(i)}>×</button>
                 </td>
               </tr>
             ))}
@@ -375,6 +393,7 @@ function CategoriasTab() {
 
 /* ========================= TEMPLATES ========================= */
 function TemplatesTab() {
+  const { showToast: showTplToast, confirmar: confirmTpl } = useUI() || {};
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -386,9 +405,13 @@ function TemplatesTab() {
   useEffect(() => { carregar(); }, []);
 
   const apagar = async (t) => {
-    if (!confirm(`Apagar template "${t.nome}"?`)) return;
+    const ok = await confirmTpl?.(
+      `O template "${t.nome}" será removido. Pedidos já criados a partir dele não são afetados.`,
+      { title: 'Apagar template?', danger: true, confirmLabel: 'Apagar' });
+    if (!ok) return;
     const { error } = await supabase.from('order_templates').delete().eq('id', t.id);
-    if (error) alert(error.message); else carregar();
+    if (error) showTplToast?.(error.message, { type: 'error' });
+    else { showTplToast?.('Template removido.', { type: 'success' }); carregar(); }
   };
 
   if (loading) return <p className="muted">Carregando…</p>;
@@ -578,6 +601,7 @@ function AuditTab() {
 
 /* ========================= FINANCEIRO ========================= */
 function FinanceiroTab() {
+  const { showToast: showFinToast } = useUI() || {};
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
   const [de, setDe] = useState(monthAgo);
@@ -597,7 +621,7 @@ function FinanceiroTab() {
       .gte('criado_em', ini)
       .lte('criado_em', fim)
       .order('criado_em', { ascending: false });
-    if (error) { alert(error.message); setLoading(false); return; }
+    if (error) { showFinToast?.(error.message, { type: 'error' }); setLoading(false); return; }
     setClaims(data || []);
     setLoading(false);
   };

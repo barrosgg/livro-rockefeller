@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLocalStorage } from '../lib/storage.js';
 import { useCommissionPct, useWorkerPct } from '../lib/settings.jsx';
+import { useUI } from '../lib/ui.jsx';
 import { fmt, totalPedido, statusLabel } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
 import Avatar from '../components/Avatar.jsx';
@@ -27,6 +28,7 @@ export default function PedidoDetalhe() {
   const { profile, user } = useAuth();
   const COMISSAO_PCT = useCommissionPct();
   const TRABALHADOR_PCT = useWorkerPct();
+  const { confirmar } = useUI() || {};
 
   const [pedido, setPedido] = useState(null);
   const [itens, setItens] = useState([]);
@@ -131,7 +133,10 @@ export default function PedidoDetalhe() {
     else { setToast({ msg: 'Pedido aprovado.' }); carregar(); }
   };
   const cancelar = async () => {
-    if (!confirm('Cancelar este pedido?')) return;
+    const ok = await confirmar?.(
+      'Este pedido será cancelado. Trabalhadores não poderão mais assumir produção.',
+      { title: 'Cancelar pedido?', danger: true, confirmLabel: 'Cancelar pedido' });
+    if (!ok) return;
     const { error } = await supabase.from('orders').update({ status: 'cancelado' }).eq('id', orderId);
     if (error) setToast({ type: 'err', msg: error.message });
     else { setToast({ msg: 'Pedido cancelado.' }); carregar(); }
@@ -181,7 +186,10 @@ export default function PedidoDetalhe() {
   };
 
   const marcarEntregue = async (claim) => {
-    if (!confirm('Confirma que você entregou os itens no baú agora?')) return;
+    const ok = await confirmar?.(
+      'Esta ação registra a entrega no baú agora e notifica os gerentes para liberar o pagamento.',
+      { title: 'Confirmar entrega no baú?', confirmLabel: 'Sim, entreguei' });
+    if (!ok) return;
     const { error } = await supabase.from('claims').update({
       status: 'entregue', entregue_em: new Date().toISOString(),
     }).eq('id', claim.id);
@@ -192,7 +200,10 @@ export default function PedidoDetalhe() {
   };
 
   const marcarPago = async (claim) => {
-    if (!confirm('Marcar pagamento como efetuado?')) return;
+    const ok = await confirmar?.(
+      'O pagamento será registrado como efetuado. Esta ação pode ser usada para gerar o recibo.',
+      { title: 'Confirmar pagamento?', confirmLabel: 'Pagamento efetuado' });
+    if (!ok) return;
     const { error } = await supabase.from('claims').update({
       status: 'pago', pago_em: new Date().toISOString(), pago_por: user.id,
     }).eq('id', claim.id);
@@ -489,6 +500,7 @@ function NotasInternas({ orderId, initial, onSaved }) {
   const [val, setVal] = useState(initial || '');
   const [edit, setEdit] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { showToast } = useUI() || {};
 
   useEffect(() => { setVal(initial || ''); }, [initial]);
 
@@ -496,8 +508,9 @@ function NotasInternas({ orderId, initial, onSaved }) {
     setSaving(true);
     const { error } = await supabase.from('orders').update({ notas_internas: val || null }).eq('id', orderId);
     setSaving(false);
-    if (error) { alert(error.message); return; }
+    if (error) { showToast?.(error.message, { type: 'error' }); return; }
     setEdit(false);
+    showToast?.('Notas internas salvas.', { type: 'success' });
     onSaved?.();
   };
 

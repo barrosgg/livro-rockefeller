@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLocalStorage } from '../lib/storage.js';
 import { fmt, clamp } from '../lib/calc.js';
+import { useUI } from '../lib/ui.jsx';
 import ProdutoCombo from '../components/ProdutoCombo.jsx';
 import ProductIcon from '../components/ProductIcon.jsx';
 
@@ -29,6 +30,7 @@ function Kbd({ children }) {
 export default function NovoPedido() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast, confirmar } = useUI() || {};
 
   const [produtos, setProdutos] = useState([]);
   const [templates, setTemplates] = useState([]);
@@ -79,25 +81,24 @@ export default function NovoPedido() {
   };
 
   const salvarComoTemplate = async () => {
-    if (!tplNome.trim()) { alert('Dê um nome ao template.'); return; }
-    if (itens.length === 0) { alert('Adicione itens antes de salvar como template.'); return; }
+    if (!tplNome.trim()) { showToast?.('Dê um nome ao template.', { type: 'error' }); return; }
+    if (itens.length === 0) { showToast?.('Adicione itens antes de salvar como template.', { type: 'error' }); return; }
     const { data: tpl, error: e1 } = await supabase.from('order_templates').insert({
       nome: tplNome.trim(), criado_por: user.id,
     }).select().single();
-    if (e1) { alert(e1.message); return; }
+    if (e1) { showToast?.(e1.message, { type: 'error' }); return; }
     const payload = itens.map(i => ({
       template_id: tpl.id, product_id: i.product.id,
       quantidade: i.quantidade, preco_unit: i.preco_unit,
     }));
     const { error: e2 } = await supabase.from('order_template_items').insert(payload);
-    if (e2) { alert(e2.message); return; }
+    if (e2) { showToast?.(e2.message, { type: 'error' }); return; }
     setSalvarTplOpen(false); setTplNome('');
-    // recarrega lista
     const { data } = await supabase.from('order_templates')
       .select('*, items:order_template_items(*, product:products(*))')
       .order('criado_em', { ascending: false });
     setTemplates(data || []);
-    alert('Template salvo!');
+    showToast?.('Template salvo!', { type: 'success' });
   };
 
   // Foco inicial no combobox
@@ -227,7 +228,16 @@ export default function NovoPedido() {
           <h1 className="mt-0">Novo Pedido</h1>
           <div className="muted small">
             Nota Nº {numero}
-            {temDraft && <> · <em>rascunho salvo automaticamente</em> · <button className="btn ghost sm" style={{ padding: '2px 8px', fontSize: '.74rem' }} onClick={() => { if (confirm('Descartar?')) limparDraft(); }}>descartar</button></>}
+            {temDraft && <> · <em>rascunho salvo automaticamente</em> · <button
+              type="button"
+              aria-label="Descartar rascunho"
+              className="btn ghost sm" style={{ padding: '2px 8px', fontSize: '.74rem' }}
+              onClick={async () => {
+                const ok = await confirmar?.(
+                  'O rascunho será apagado. Itens não enviados serão perdidos.',
+                  { title: 'Descartar rascunho?', danger: true, confirmLabel: 'Descartar' });
+                if (ok) limparDraft();
+              }}>descartar</button></>}
           </div>
         </div>
         <div className="flex gap-1 small muted" style={{ alignItems: 'center' }}>
@@ -360,7 +370,9 @@ export default function NovoPedido() {
                   </td>
                   <td className="num"><strong style={{ fontSize: '1rem' }}>{fmt(sub)}</strong></td>
                   <td className="center">
-                    <button className="btn ghost sm" title="Remover"
+                    <button type="button" className="btn ghost sm"
+                      aria-label={`Remover ${it.product.nome} do pedido`}
+                      title="Remover item"
                       style={{ width: 32, padding: '4px 0', fontSize: '1rem', lineHeight: 1 }}
                       onClick={() => remover(i)}>×</button>
                   </td>
