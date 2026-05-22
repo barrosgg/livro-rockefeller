@@ -41,12 +41,19 @@ function Layout() {
 }
 
 function Protected({ children, allow }) {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, profileReady } = useAuth();
   const loc = useLocation();
   if (loading) return <div className="shell"><div className="page">Carregando…</div></div>;
   if (!user) return <Navigate to="/login" replace state={{ from: loc }} />;
-  if (!isProfileComplete(profile) && loc.pathname !== '/perfil') return <Navigate to="/perfil" replace />;
-  if (allow && profile && !allow.includes(profile.role)) {
+  // Profile ainda carregando — mostra loader em vez de redirecionar (evita
+  // F5 cair em /perfil por engano enquanto o profile não chegou)
+  if (!profileReady || !profile) {
+    return <div className="shell"><div className="page">Carregando perfil…</div></div>;
+  }
+  if (!isProfileComplete(profile) && loc.pathname !== '/perfil') {
+    return <Navigate to="/perfil" replace />;
+  }
+  if (allow && !allow.includes(profile.role)) {
     return <div className="page"><h2>Acesso restrito</h2><p className="muted">Esta página é exclusiva para: {allow.join(', ')}.</p></div>;
   }
   return children;

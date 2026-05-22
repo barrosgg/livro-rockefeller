@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
+import { useLocalStorage } from '../lib/storage.js';
 import { fmt, clamp } from '../lib/calc.js';
 
 const ORDEM_CATEGORIAS = [
@@ -88,14 +89,30 @@ export default function NovoPedido() {
 
   const [produtos, setProdutos] = useState([]);
   const [selProd, setSelProd] = useState(null);
-  const [itens, setItens] = useState([]);
   const [qtd, setQtd] = useState(50);
 
-  const [cliente, setCliente] = useState('');
-  const [anotacoes, setAnotacoes] = useState('');
-  const [descontoPct, setDescontoPct] = useState(0);
-  const [prazo, setPrazo] = useState('');
-  const [numero] = useState(novoNumero());
+  /* Draft persistente em localStorage — sobrevive ao F5 / abandono de aba */
+  const [draft, setDraft, limparDraft] = useLocalStorage('draft:pedido:novo', () => ({
+    itens: [],
+    cliente: '',
+    anotacoes: '',
+    descontoPct: 0,
+    prazo: '',
+    numero: novoNumero(),
+  }));
+  // Aliases para legibilidade
+  const itens = draft.itens || [];
+  const setItens = (next) => setDraft(d => ({ ...d, itens: typeof next === 'function' ? next(d.itens || []) : next }));
+  const cliente = draft.cliente || '';
+  const setCliente = (v) => setDraft(d => ({ ...d, cliente: v }));
+  const anotacoes = draft.anotacoes || '';
+  const setAnotacoes = (v) => setDraft(d => ({ ...d, anotacoes: v }));
+  const descontoPct = Number(draft.descontoPct || 0);
+  const setDescontoPct = (v) => setDraft(d => ({ ...d, descontoPct: v }));
+  const prazo = draft.prazo || '';
+  const setPrazo = (v) => setDraft(d => ({ ...d, prazo: v }));
+  const numero = draft.numero;
+
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState(null);
 
@@ -174,17 +191,30 @@ export default function NovoPedido() {
     const { error: e2 } = await supabase.from('order_items').insert(payload);
     setSalvando(false);
     if (e2) { setErro(e2.message); return; }
+    limparDraft();          // limpa rascunho ao salvar com sucesso
     navigate(`/pedidos/${order.id}`);
   };
+
+  const temDraft = itens.length > 0 || cliente || anotacoes || descontoPct > 0 || prazo;
 
   return (
     <div className="page">
       <div className="flex between center-y wrap gap-2">
         <div>
           <h1 className="mt-0">Novo Pedido</h1>
-          <p className="muted small mt-0">Monte o orçamento. Ao aprovar, vai para produção e os trabalhadores podem assumir.</p>
+          <p className="muted small mt-0">
+            Monte o orçamento. Ao aprovar, vai para produção e os trabalhadores podem assumir.
+            {temDraft && <> · <em>Rascunho salvo automaticamente.</em></>}
+          </p>
         </div>
-        <span className="seal">Nota Nº {numero}</span>
+        <div className="flex gap-1 center-y">
+          <span className="seal">Nota Nº {numero}</span>
+          {temDraft && (
+            <button className="btn ghost sm" onClick={() => {
+              if (confirm('Descartar o rascunho atual?')) limparDraft();
+            }}>Descartar rascunho</button>
+          )}
+        </div>
       </div>
       <div className="divider" />
 

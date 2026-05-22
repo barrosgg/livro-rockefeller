@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { useAuth } from '../lib/auth.jsx';
+import { useLocalStorage } from '../lib/storage.js';
 import { fmt, totalPedido, statusLabel, TRABALHADOR_PCT, COMISSAO_PCT } from '../lib/calc.js';
 import StatusTimeline from '../components/StatusTimeline.jsx';
 
@@ -29,8 +30,18 @@ export default function PedidoDetalhe() {
 
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
 
-  const [novoClaim, setNovoClaim] = useState({});
-  const [dataPrevista, setDataPrevista] = useState('');
+  /* Rascunho do "começar a produzir" persistente por pedido */
+  const [draftClaim, setDraftClaim, limparDraftClaim] = useLocalStorage(
+    `draft:claim:${id}`,
+    () => ({ quantidades: {}, dataPrevista: '' })
+  );
+  const novoClaim = draftClaim.quantidades || {};
+  const setNovoClaim = (next) => setDraftClaim(d => ({
+    ...d,
+    quantidades: typeof next === 'function' ? next(d.quantidades || {}) : next,
+  }));
+  const dataPrevista = draftClaim.dataPrevista || '';
+  const setDataPrevista = (v) => setDraftClaim(d => ({ ...d, dataPrevista: v }));
   const [criandoClaim, setCriandoClaim] = useState(false);
 
   const carregar = useCallback(async () => {
@@ -125,7 +136,7 @@ export default function PedidoDetalhe() {
       if (pedido.status === 'aprovado') {
         await supabase.from('orders').update({ status: 'em_producao' }).eq('id', id);
       }
-      setNovoClaim({}); setDataPrevista('');
+      limparDraftClaim();
       setToast({ msg: 'Produção iniciada! Bom trabalho.' });
       await carregar();
     } catch (e) {
