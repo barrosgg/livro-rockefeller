@@ -152,12 +152,27 @@ create policy profiles_select on profiles
 drop policy if exists profiles_update_self on profiles;
 create policy profiles_update_self on profiles
   for update using (id = auth.uid())
-  with check (id = auth.uid() and role = (select role from profiles where id = auth.uid()));
--- (impede o próprio usuário de mudar a sua role)
+  with check (id = auth.uid());
 
 drop policy if exists profiles_update_owner on profiles;
 create policy profiles_update_owner on profiles
-  for update using (app_role() = 'proprietario');
+  for update using (app_role() = 'proprietario')
+  with check (app_role() = 'proprietario');
+
+-- Trigger: impede usuário comum de alterar a própria role (só Proprietário pode mudar role)
+create or replace function public.prevent_role_self_change()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.role is distinct from old.role and app_role() is distinct from 'proprietario' then
+    raise exception 'Apenas o Proprietário pode alterar papéis (role).';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists profiles_role_guard on profiles;
+create trigger profiles_role_guard
+  before update on profiles
+  for each row execute procedure public.prevent_role_self_change();
 
 -- ----- products -----
 drop policy if exists products_select on products;

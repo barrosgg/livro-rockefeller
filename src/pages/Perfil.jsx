@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../lib/auth.jsx';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, isProfileComplete } from '../lib/auth.jsx';
 import { supabase } from '../lib/supabase.js';
 
 export default function Perfil() {
   const { profile, refreshProfile, user } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     nome_completo: '', identificacao: '', discord_handle: '', conta_bancaria: '',
   });
@@ -26,11 +28,15 @@ export default function Perfil() {
   const submit = async (e) => {
     e.preventDefault();
     setSaving(true); setMsg(null);
-    const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
+    const { error } = await supabase.from('profiles').update(form).eq('id', user.id).select().single();
     setSaving(false);
     if (error) { setMsg({ type: 'err', text: error.message }); return; }
     setMsg({ type: 'ok', text: 'Perfil salvo.' });
-    refreshProfile();
+    await refreshProfile();
+    // Se era o primeiro preenchimento, redireciona para a lista de pedidos
+    if (!isProfileComplete(profile)) {
+      navigate('/pedidos', { replace: true });
+    }
   };
 
   return (
