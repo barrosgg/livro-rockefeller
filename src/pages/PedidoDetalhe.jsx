@@ -35,7 +35,7 @@ export default function PedidoDetalhe() {
 
   /* Rascunho do "começar a produzir" persistente por pedido */
   const [draftClaim, setDraftClaim, limparDraftClaim] = useLocalStorage(
-    `draft:claim:${id}`,
+    `draft:claim:${param}`,
     () => ({ quantidades: {}, dataPrevista: '' })
   );
   const novoClaim = draftClaim.quantidades || {};
@@ -50,11 +50,24 @@ export default function PedidoDetalhe() {
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      // Aceita UUID OU short_code no path
-      const pQuery = isUuid(param)
-        ? supabase.from('orders').select('*').eq('id', param).maybeSingle()
-        : supabase.from('orders').select('*').eq('short_code', param).maybeSingle();
-      const p = await pQuery;
+      // Aceita UUID OU short_code no path. Se um falhar, tenta o outro.
+      let p;
+      if (isUuid(param)) {
+        p = await supabase.from('orders').select('*').eq('id', param).maybeSingle();
+      } else {
+        p = await supabase.from('orders').select('*').eq('short_code', param).maybeSingle();
+        // fallback: alguns dados antigos podem ter id que coincida
+        if (!p.data && !p.error) {
+          p = await supabase.from('orders').select('*').eq('id', param).maybeSingle();
+        }
+      }
+      if (p.error) {
+        console.error('Erro buscando pedido:', p.error);
+        setErro(p.error.message);
+        setPedido(null);
+        setLoading(false);
+        return;
+      }
       const orderId = p.data?.id;
       if (!orderId) {
         setPedido(null);
