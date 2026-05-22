@@ -16,8 +16,11 @@ function Toast({ message, type='ok', onClose }) {
   return <div className={`toast ${type === 'err' ? 'error' : ''}`}>{message}</div>;
 }
 
+// Reconhece UUID (36 chars com hífens) vs short_code (6+ alfanumérico)
+const isUuid = (s) => typeof s === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+
 export default function PedidoDetalhe() {
-  const { id } = useParams();
+  const { id: param } = useParams();
   const { profile, user } = useAuth();
 
   const [pedido, setPedido] = useState(null);
@@ -47,13 +50,23 @@ export default function PedidoDetalhe() {
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      const [p, oi, bal, cl] = await Promise.all([
-        supabase.from('orders').select('*').eq('id', id).maybeSingle(),
-        supabase.from('order_items').select('*, product:products(*)').eq('order_id', id),
-        supabase.from('order_item_balance').select('*').eq('order_id', id),
+      // Aceita UUID OU short_code no path
+      const pQuery = isUuid(param)
+        ? supabase.from('orders').select('*').eq('id', param).maybeSingle()
+        : supabase.from('orders').select('*').eq('short_code', param).maybeSingle();
+      const p = await pQuery;
+      const orderId = p.data?.id;
+      if (!orderId) {
+        setPedido(null);
+        setLoading(false);
+        return;
+      }
+      const [oi, bal, cl] = await Promise.all([
+        supabase.from('order_items').select('*, product:products(*)').eq('order_id', orderId),
+        supabase.from('order_item_balance').select('*').eq('order_id', orderId),
         supabase.from('claims')
           .select('*, trabalhador:profiles!claims_trabalhador_id_fkey(*), items:claim_items(*, order_item:order_items(*, product:products(*)))')
-          .eq('order_id', id)
+          .eq('order_id', orderId)
           .order('criado_em'),
       ]);
       if (p.error) setErro(p.error.message);
@@ -87,19 +100,21 @@ export default function PedidoDetalhe() {
   if (loading) return <div className="page">Carregando…</div>;
   if (!pedido) return <div className="page">Pedido não encontrado. <Link to="/pedidos">Voltar</Link></div>;
 
+  const orderId = pedido.id;
+
   const aprovar = async () => {
     if (!pedido.prazo_entrega) { setToast({ type: 'err', msg: 'Defina o prazo antes de aprovar.' }); return; }
     const { error } = await supabase.from('orders').update({
       status: 'aprovado',
       aprovado_por: user.id,
       aprovado_em: new Date().toISOString(),
-    }).eq('id', id);
+    }).eq('id', orderId);
     if (error) setToast({ type: 'err', msg: error.message });
     else { setToast({ msg: 'Pedido aprovado.' }); carregar(); }
   };
   const cancelar = async () => {
     if (!confirm('Cancelar este pedido?')) return;
-    const { error } = await supabase.from('orders').update({ status: 'cancelado' }).eq('id', id);
+    const { error } = await supabase.from('orders').update({ status: 'cancelado' }).eq('id', orderId);
     if (error) setToast({ type: 'err', msg: error.message });
     else { setToast({ msg: 'Pedido cancelado.' }); carregar(); }
   };
@@ -121,7 +136,7 @@ export default function PedidoDetalhe() {
     setCriandoClaim(true);
     try {
       const { data: claim, error: e1 } = await supabase.from('claims').insert({
-        order_id: id,
+        order_id: orderId,
         trabalhador_id: user.id,
         data_prevista_entrega: new Date(dataPrevista).toISOString(),
         status: 'em_producao',
@@ -134,7 +149,7 @@ export default function PedidoDetalhe() {
       if (e2) throw e2;
 
       if (pedido.status === 'aprovado') {
-        await supabase.from('orders').update({ status: 'em_producao' }).eq('id', id);
+        await supabase.from('orders').update({ status: 'em_producao' }).eq('id', orderId);
       }
       limparDraftClaim();
       setToast({ msg: 'Produção iniciada! Bom trabalho.' });
@@ -170,22 +185,24 @@ export default function PedidoDetalhe() {
   };
 
   const possivelAtualizarStatusPedido = async () => {
-    const { data: cls } = await supabase.from('claims').select('status').eq('order_id', id);
+    const { data: cls } = await supabase.from('claims').select('status').eq('order_id', orderId);
     if (!cls || cls.length === 0) return;
     const todosEntregues = cls.every(c => c.status === 'entregue' || c.status === 'pago');
     const todosPagos = cls.every(c => c.status === 'pago');
-    const { data: bal } = await supabase.from('order_item_balance').select('quantidade_em_aberto').eq('order_id', id);
+    const { data: bal } = await supabase.from('order_item_balance').select('quantidade_em_aberto').eq('order_id', orderId);
     const saldo = (bal || []).reduce((a, b) => a + Number(b.quantidade_em_aberto), 0);
     if (saldo === 0 && todosPagos) {
-      await supabase.from('orders').update({ status: 'concluido', concluido_em: new Date().toISOString() }).eq('id', id);
+      await supabase.from('orders').update({ status: 'concluido', concluido_em: new Date().toISOString() }).eq('id', orderId);
     } else if (saldo === 0 && todosEntregues) {
-      await supabase.from('orders').update({ status: 'entregue' }).eq('id', id);
+      await supabase.from('orders').update({ status: 'entregue' }).eq('id', orderId);
     }
   };
 
   const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status) && agg.qtdAberto > 0;
-  const urlPedido = `${window.location.origin}/pedidos/${pedido.id}`;
-  const urlPublico = pedido.public_token ? `${window.location.origin}/p/${pedido.public_token}` : null;
+  const urlPedido = `${window.location.origin}/pedidos/${pedido.short_code || pedido.id}`;
+  const urlPublico = pedido.public_code
+    ? `${window.location.origin}/p/${pedido.public_code}`
+    : (pedido.public_token ? `${window.location.origin}/p/${pedido.public_token}` : null);
 
   const mensagemDiscord = () => {
     const linhas = [

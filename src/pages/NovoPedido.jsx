@@ -131,7 +131,7 @@ export default function NovoPedido() {
     setSalvando(false);
     if (e2) { setErro(e2.message); return; }
     limparDraft();
-    navigate(`/pedidos/${order.id}`);
+    navigate(`/pedidos/${order.short_code || order.id}`);
   }, [itens, prazo, numero, cliente, anotacoes, calc.pctEfetivo, user, limparDraft, navigate]);
 
   /* ---- Atalhos globais ---- */

@@ -15,7 +15,7 @@ export default function Pedidos() {
     (async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, numero_nota, cliente, status, prazo_entrega, criado_em')
+        .select('id, short_code, numero_nota, cliente, status, prazo_entrega, criado_em')
         .order('criado_em', { ascending: false });
       if (!error) setPedidos(data || []);
       setLoading(false);
@@ -92,7 +92,7 @@ export default function Pedidos() {
                 <td><span className={`badge ${p.status}`}>{statusLabel(p.status)}</span></td>
                 <td>{p.prazo_entrega ? new Date(p.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">—</span>}</td>
                 <td>{new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>
-                <td><Link className="btn ghost sm" to={`/pedidos/${p.id}`}>abrir</Link></td>
+                <td><Link className="btn ghost sm" to={`/pedidos/${p.short_code || p.id}`}>abrir</Link></td>
               </tr>
             ))}
           </tbody>

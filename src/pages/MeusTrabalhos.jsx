@@ -12,7 +12,7 @@ export default function MeusTrabalhos() {
   useEffect(() => {
     if (!user) return;
     supabase.from('claims')
-      .select('*, order:orders(id, numero_nota, cliente, status), items:claim_items(quantidade, order_item:order_items(preco_unit, product:products(nome)))')
+      .select('*, order:orders(id, short_code, numero_nota, cliente, status), items:claim_items(quantidade, order_item:order_items(preco_unit, product:products(nome)))')
       .eq('trabalhador_id', user.id)
       .order('criado_em', { ascending: false })
       .then(({ data }) => { setClaims(data || []); setLoading(false); });
@@ -41,7 +41,7 @@ export default function MeusTrabalhos() {
                   <td className="num"><strong>{fmt(bruto * TRABALHADOR_PCT)}</strong></td>
                   <td><span className={`badge ${c.status}`}>{statusLabel(c.status)}</span></td>
                   <td>{new Date(c.data_prevista_entrega).toLocaleString('pt-BR')}</td>
-                  <td><Link className="btn ghost sm" to={`/pedidos/${c.order?.id}`}>abrir</Link></td>
+                  <td><Link className="btn ghost sm" to={`/pedidos/${c.order?.short_code || c.order?.id}`}>abrir</Link></td>
                 </tr>
               );
             })}
