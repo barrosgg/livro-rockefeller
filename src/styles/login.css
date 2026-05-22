@@ -1,58 +1,76 @@
 /* =====================================================================
-   Página de Login — cinematográfica, western, cream-on-gold.
+   Página de Login — cinematográfica com foto da fazenda + frosted glass.
    ===================================================================== */
 
 .login-stage {
   position: relative;
   min-height: 100vh;
-  display: grid; place-items: center;
-  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 24px 24px 6%;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at center, var(--paper) 0%, var(--bg) 55%, #2a1f0a 100%);
+    /* gradiente warm para dar tonalidade vintage */
+    linear-gradient(115deg, rgba(80,40,15,.35) 0%, rgba(80,40,15,.05) 35%, rgba(80,40,15,.25) 100%),
+    /* imagem da fazenda */
+    url('/imagem-fazenda.png') center/cover no-repeat,
+    /* fallback */
+    var(--bg-1);
+  background-blend-mode: multiply, normal;
 }
 
-/* Vinheta cinematográfica nas bordas */
+/* Camada warm/sepia em cima da imagem (deixa tudo no clima 1900) */
+.login-stage::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 50%, transparent 0%, rgba(20,15,8,.55) 75%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Vinheta dramática nos cantos */
 .login-vignette {
   position: absolute; inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.55) 100%);
-  z-index: 1;
+    radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,.55) 100%);
+  z-index: 2;
 }
 
-/* Camada de poeira dourada — pontos pequenos drifting */
+/* Camada de poeira dourada (mantida) */
 .login-dust {
   position: absolute; inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   overflow: hidden;
 }
 .login-dust::before, .login-dust::after {
   content: ""; position: absolute; inset: -10%;
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(212,181,116,.5) 0, transparent 1.5px),
-    radial-gradient(circle at 80% 30%, rgba(212,181,116,.4) 0, transparent 1px),
-    radial-gradient(circle at 30% 70%, rgba(212,181,116,.6) 0, transparent 1.5px),
-    radial-gradient(circle at 70% 80%, rgba(212,181,116,.3) 0, transparent 1px),
-    radial-gradient(circle at 50% 50%, rgba(212,181,116,.4) 0, transparent 2px),
-    radial-gradient(circle at 90% 10%, rgba(212,181,116,.5) 0, transparent 1px),
-    radial-gradient(circle at 15% 90%, rgba(212,181,116,.4) 0, transparent 1.5px),
-    radial-gradient(circle at 60% 15%, rgba(212,181,116,.3) 0, transparent 1px),
-    radial-gradient(circle at 25% 45%, rgba(212,181,116,.5) 0, transparent 1.5px),
-    radial-gradient(circle at 85% 65%, rgba(212,181,116,.4) 0, transparent 1px),
-    radial-gradient(circle at 45% 85%, rgba(212,181,116,.5) 0, transparent 2px),
-    radial-gradient(circle at 5% 60%, rgba(212,181,116,.3) 0, transparent 1px);
+    radial-gradient(circle at 10% 20%, rgba(255,220,140,.6) 0, transparent 1.5px),
+    radial-gradient(circle at 80% 30%, rgba(255,220,140,.5) 0, transparent 1px),
+    radial-gradient(circle at 30% 70%, rgba(255,220,140,.7) 0, transparent 1.5px),
+    radial-gradient(circle at 70% 80%, rgba(255,220,140,.4) 0, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(255,220,140,.5) 0, transparent 2px),
+    radial-gradient(circle at 90% 10%, rgba(255,220,140,.6) 0, transparent 1px),
+    radial-gradient(circle at 15% 90%, rgba(255,220,140,.5) 0, transparent 1.5px),
+    radial-gradient(circle at 60% 15%, rgba(255,220,140,.4) 0, transparent 1px),
+    radial-gradient(circle at 25% 45%, rgba(255,220,140,.6) 0, transparent 1.5px),
+    radial-gradient(circle at 85% 65%, rgba(255,220,140,.5) 0, transparent 1px),
+    radial-gradient(circle at 45% 85%, rgba(255,220,140,.6) 0, transparent 2px),
+    radial-gradient(circle at 5% 60%, rgba(255,220,140,.4) 0, transparent 1px);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   animation: drift 60s linear infinite;
-  opacity: .7;
+  opacity: .8;
 }
 .login-dust::after {
   animation-duration: 90s;
   animation-direction: reverse;
   background-position: 50% 50%;
-  opacity: .5;
+  opacity: .55;
 }
 @keyframes drift {
   0%   { transform: translate(0, 0); }
@@ -60,30 +78,30 @@
   100% { transform: translate(0, 0); }
 }
 
-/* Névoa baixa */
+/* Névoa rasteira sutil */
 .login-mist {
   position: absolute; left: -10%; right: -10%; bottom: -10%;
-  height: 35vh;
+  height: 30vh;
   pointer-events: none;
-  z-index: 3;
+  z-index: 4;
   background:
-    linear-gradient(to top, rgba(245,240,228,.45) 0%, transparent 100%);
+    linear-gradient(to top, rgba(245,240,228,.32) 0%, transparent 100%);
   filter: blur(20px);
   animation: mist 20s ease-in-out infinite;
 }
 @keyframes mist {
-  0%,100% { transform: translateX(0); opacity: .55; }
-  50%     { transform: translateX(20px); opacity: .75; }
+  0%,100% { transform: translateX(0); opacity: .4; }
+  50%     { transform: translateX(20px); opacity: .65; }
 }
 
-/* Container da carta */
+/* Card de login — alinhado à esquerda */
 .login-card-wrap {
   position: relative;
   z-index: 10;
-  max-width: 480px; width: 100%;
-  transform-style: preserve-3d;
-  perspective: 1200px;
+  max-width: 460px; width: 100%;
   animation: cardFloat 6s ease-in-out infinite;
+  /* Glow dourado em volta — separa o card da imagem */
+  filter: drop-shadow(0 0 40px rgba(212,171,77,.25));
 }
 @keyframes cardFloat {
   0%, 100% { transform: translateY(0); }
@@ -91,22 +109,44 @@
 }
 
 .login-card-tilt {
-  background: var(--paper);
+  background:
+    /* gradient quase opaco para legibilidade */
+    linear-gradient(135deg, rgba(251,246,232,.95) 0%, rgba(243,236,220,.92) 100%);
   border: 1px solid var(--gold);
   border-radius: var(--r);
-  padding: 48px 40px 40px;
+  padding: 44px 38px 36px;
   text-align: center;
-  box-shadow:
-    0 30px 70px rgba(0,0,0,.45),
-    0 0 0 1px rgba(176,141,61,.4),
-    inset 0 0 60px rgba(176,141,61,.06);
   position: relative;
+  /* Frosted glass — vidro fosco que esfuma o que está atrás */
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    0 30px 70px rgba(0,0,0,.55),
+    0 0 0 1px rgba(176,141,61,.5),
+    inset 0 0 80px rgba(255,220,140,.08),
+    inset 0 1px 0 rgba(255,255,255,.4);
   transition: transform .2s ease-out;
   transform-style: preserve-3d;
   will-change: transform;
 }
 
-/* Ornamentos nos 4 cantos */
+/* Glow extra na borda direita do card — "luz vazando" para a imagem */
+.login-card-tilt::after {
+  content: "";
+  position: absolute;
+  top: 10%; bottom: 10%;
+  right: -30px;
+  width: 60px;
+  background: radial-gradient(ellipse at center,
+    rgba(255,220,140,.35) 0%,
+    rgba(255,220,140,.1) 50%,
+    transparent 100%);
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Ornamentos nos 4 cantos do card */
 .login-corner {
   position: absolute;
   width: 28px; height: 28px;
@@ -118,7 +158,7 @@
 .login-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; }
 .login-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; }
 
-/* Animações dos elementos */
+/* Animações de entrada */
 .fade-up { animation: fadeUp 800ms cubic-bezier(.2,.7,.2,1) both; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }
@@ -138,7 +178,6 @@
   100% { opacity: 1; transform: scale(1) rotate(-1.5deg); }
 }
 
-/* Delays escalonados */
 .delay-1 { animation-delay: 200ms; }
 .delay-2 { animation-delay: 500ms; }
 .delay-3 { animation-delay: 800ms; }
@@ -163,7 +202,7 @@
   100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* Linhas decorativas finas no card */
+/* Linha decorativa fina no card */
 .login-decor-line {
   height: 1px;
   width: 60%;
@@ -173,8 +212,12 @@
   animation: fadeUp 600ms cubic-bezier(.2,.7,.2,1) 1000ms both;
 }
 
-/* Responsivo */
-@media (max-width: 540px) {
+/* Mobile: card centralizado novamente */
+@media (max-width: 800px) {
+  .login-stage {
+    justify-content: center;
+    padding: 24px;
+  }
   .login-card-tilt { padding: 32px 22px 26px; }
   .login-corner { width: 20px; height: 20px; }
 }
