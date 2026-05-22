@@ -144,7 +144,7 @@ export default function PedidoDetalhe() {
     const escolhidos = itens
       .map(it => ({ order_item_id: it.id, quantidade: Number(novoClaim[it.id] || 0) }))
       .filter(x => x.quantidade > 0);
-    if (escolhidos.length === 0) { setErro('Selecione ao menos 1 produto que você vai fabricar.'); return; }
+    if (escolhidos.length === 0) { setErro('Selecione ao menos 1 produto que você vai produzir.'); return; }
     if (!dataPrevista) { setErro('Informe quando você pretende entregar no baú.'); return; }
     for (const e of escolhidos) {
       const aberto = balance[e.order_item_id]?.quantidade_em_aberto ?? 0;
@@ -216,7 +216,13 @@ export default function PedidoDetalhe() {
     }
   };
 
-  const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status) && agg.qtdAberto > 0;
+  const contratoAssinado = !!profile?.contrato_assinado_em;
+  const podeAssumir = ['aprovado', 'em_producao'].includes(pedido.status)
+    && agg.qtdAberto > 0
+    && contratoAssinado;
+  const precisaAssinarContrato = ['aprovado', 'em_producao'].includes(pedido.status)
+    && agg.qtdAberto > 0
+    && !contratoAssinado;
   const urlPedido = `${window.location.origin}/pedidos/${pedido.short_code || pedido.id}`;
   const urlPublico = pedido.public_code
     ? `${window.location.origin}/p/${pedido.public_code}`
@@ -321,7 +327,7 @@ export default function PedidoDetalhe() {
             <th className="num">Falta produzir</th>
             <th className="num">Preço unit.</th>
             <th className="num">Subtotal</th>
-            {podeAssumir && <th className="num">Eu vou fabricar</th>}
+            {podeAssumir && <th className="num">Eu vou produzir</th>}
           </tr>
         </thead>
         <tbody>
@@ -363,12 +369,27 @@ export default function PedidoDetalhe() {
         </tbody>
       </table>
 
+      {/* ---------- Aviso: precisa assinar contrato ---------- */}
+      {precisaAssinarContrato && (
+        <div className="card mt-3" style={{
+          background: 'rgba(132,36,25,.08)',
+          borderColor: 'var(--burgundy)',
+        }}>
+          <h3 className="mt-0" style={{ color: 'var(--burgundy)' }}>⚠ Contrato pendente</h3>
+          <p className="mt-0">
+            Para assumir a produção de pedidos da Fazenda, você precisa primeiro
+            <strong> assinar o contrato de prestação de serviços</strong>.
+          </p>
+          <Link to="/perfil" className="btn danger">Ir para o Contrato</Link>
+        </div>
+      )}
+
       {/* ---------- Formulário Começar a produção ---------- */}
       {podeAssumir && (
         <div className="card mt-3" style={{ borderColor: 'var(--ouro-medio)' }}>
           <h3 className="mt-0">Quero começar a produzir</h3>
           <p className="muted small mt-0">
-            1. Na tabela acima, escreva quantas unidades de cada produto <strong>você</strong> vai fabricar.<br />
+            1. Na tabela acima, escreva quantas unidades de cada produto <strong>você</strong> vai produzir.<br />
             2. Aqui embaixo, escolha a data em que pretende entregar tudo no baú.<br />
             3. Confira sua remuneração e confirme.
           </p>
