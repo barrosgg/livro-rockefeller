@@ -1,0 +1,286 @@
+/* =====================================================================
+   Caderno da Fazenda Rockefeller — tema "Livro Contábil 1900"
+   Paleta + tipografia portadas do projeto original (style.css legado),
+   reagrupadas em variáveis e componentes utilitários.
+   ===================================================================== */
+
+:root {
+  /* Pergaminhos */
+  --page:        #f5ecd0;
+  --page-soft:   #faf3dc;
+  --page-edge:   #e7d8a8;
+
+  /* Tintas */
+  --tinta:       #2a1f10;
+  --tinta-soft:  #4a3a20;
+  --tinta-mute:  #6b5a3a;
+
+  /* Ouro */
+  --ouro-claro:  #d4ab4d;
+  --ouro:        #b8902e;
+  --ouro-medio:  #8b6f23;
+  --ouro-prof:   #5e4915;
+  --bg-frame:    #3d2e0e;
+
+  /* Selo / acentos */
+  --vermelho:    #7a1f15;
+  --verde-livro: #2e3d22;
+
+  /* UI */
+  --raio:        4px;
+  --shadow-pg:   0 8px 30px rgba(0,0,0,.35), inset 0 0 0 2px var(--ouro-medio),
+                 inset 0 0 0 4px var(--page-edge);
+  --shadow-soft: 0 2px 8px rgba(0,0,0,.18);
+}
+
+/* ---------- Reset leve ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 800px at 50% -200px, #5e4915 0%, var(--bg-frame) 60%, #1a1207 100%);
+  color: var(--tinta);
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--ouro-prof); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 {
+  font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  font-weight: 600;
+  color: var(--tinta);
+  letter-spacing: .04em;
+  margin: 0 0 .6em 0;
+}
+h1 { font-size: 2.0rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; }
+
+.subtitle {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--tinta-soft);
+}
+
+/* ---------- Página / cartão ---------- */
+.page {
+  background: var(--page);
+  border-radius: var(--raio);
+  padding: 28px 30px;
+  box-shadow: var(--shadow-pg);
+  position: relative;
+}
+.page::before {
+  /* moldura interna decorativa */
+  content: "";
+  position: absolute; inset: 8px;
+  border: 1px solid var(--ouro-medio);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: .55;
+}
+
+.card {
+  background: var(--page-soft);
+  border: 1px solid var(--ouro-medio);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 18px 60px;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  background: linear-gradient(180deg, #2a1f0a 0%, #1a1207 100%);
+  border-bottom: 2px solid var(--ouro-medio);
+  color: var(--page-soft);
+}
+.topbar .brand {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  letter-spacing: .12em;
+  color: var(--ouro-claro);
+}
+.topbar nav { display: flex; gap: 18px; }
+.topbar nav a {
+  color: var(--page-soft);
+  font-family: 'IM Fell English', serif;
+  font-size: 1.05rem;
+  padding: 4px 10px;
+  border-radius: var(--raio);
+}
+.topbar nav a.active,
+.topbar nav a:hover { background: rgba(212,171,77,.18); color: var(--ouro-claro); text-decoration: none; }
+.topbar .user { display: flex; align-items: center; gap: 12px; color: var(--page-soft); font-style: italic; }
+
+/* ---------- Botões ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: .92rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border-radius: var(--raio);
+  border: 1px solid var(--ouro-prof);
+  background: linear-gradient(180deg, var(--ouro-claro) 0%, var(--ouro) 100%);
+  color: #2a1f10;
+  cursor: pointer;
+  transition: transform .05s ease, box-shadow .15s ease, filter .15s ease;
+  box-shadow: 0 1px 0 #fff7d6 inset, 0 2px 6px rgba(0,0,0,.25);
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn.ghost {
+  background: transparent;
+  color: var(--ouro-prof);
+}
+.btn.danger {
+  background: linear-gradient(180deg, #b04a3a 0%, var(--vermelho) 100%);
+  color: #fbeee0;
+  border-color: #4d130c;
+}
+.btn.sm { padding: 5px 10px; font-size: .8rem; }
+
+/* ---------- Inputs ---------- */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.field label {
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tinta-soft);
+}
+input[type="text"], input[type="number"], input[type="datetime-local"],
+input[type="email"], input[type="password"], textarea, select {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  background: var(--page-soft);
+  border: 1px solid var(--ouro-medio);
+  border-radius: var(--raio);
+  padding: 8px 10px;
+  color: var(--tinta);
+  outline: none;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  border-color: var(--ouro-prof);
+  box-shadow: 0 0 0 2px rgba(184,144,46,.35);
+}
+textarea { min-height: 80px; resize: vertical; }
+
+/* ---------- Tabelas ---------- */
+table.book {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Cormorant Garamond', serif;
+}
+table.book th, table.book td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--ouro-medio);
+  text-align: left;
+}
+table.book th {
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tinta-soft);
+  background: var(--page-edge);
+}
+table.book tbody tr:hover { background: rgba(212,171,77,.12); }
+table.book .num, .num { font-family: 'Special Elite', monospace; text-align: right; }
+
+/* ---------- Badges de status ---------- */
+.badge {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ouro-medio);
+  background: var(--page-soft);
+  color: var(--tinta-soft);
+}
+.badge.rascunho   { background: #ece1be; }
+.badge.aprovado   { background: #d8e3c4; color: var(--verde-livro); border-color: var(--verde-livro); }
+.badge.em_producao{ background: #f0d99a; }
+.badge.entregue   { background: #c8d8b8; color: var(--verde-livro); border-color: var(--verde-livro); }
+.badge.pago       { background: #b8c8a8; color: var(--verde-livro); border-color: var(--verde-livro); }
+.badge.concluido  { background: #2e3d22; color: #f5ecd0; border-color: #2e3d22; }
+.badge.cancelado  { background: #d9b4ad; color: var(--vermelho); border-color: var(--vermelho); }
+
+/* ---------- Selo / cabeçalho de página ---------- */
+.seal {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 6px 14px;
+  border: 2px solid var(--vermelho);
+  color: var(--vermelho);
+  font-family: 'Cinzel', serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transform: rotate(-2deg);
+  background: rgba(255,255,255,.4);
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro-medio), transparent);
+  margin: 18px 0;
+}
+
+/* ---------- Helpers ---------- */
+.row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.row > * { flex: 1 1 280px; }
+.muted { color: var(--tinta-mute); font-style: italic; }
+.right { text-align: right; }
+.center { text-align: center; }
+.mt-0 { margin-top: 0; } .mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; } .mt-4 { margin-top: 32px; }
+.gap-2 { gap: 16px; }
+.flex { display: flex; }
+.between { justify-content: space-between; }
+.center-y { align-items: center; }
+.stack > * + * { margin-top: 10px; }
+
+/* ---------- Login ---------- */
+.login-wrap {
+  min-height: 100vh;
+  display: grid; place-items: center;
+  padding: 24px;
+}
+.login-card {
+  max-width: 460px; width: 100%;
+  text-align: center;
+}
+.login-card .ornament {
+  font-family: 'IM Fell English', serif;
+  font-size: 1.6rem;
+  color: var(--ouro-prof);
+  margin: 6px 0 4px;
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 720px) {
+  .topbar { flex-direction: column; gap: 8px; padding: 12px; }
+  .shell { padding: 12px; }
+  .page { padding: 18px; }
+  h1 { font-size: 1.6rem; }
+}
