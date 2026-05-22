@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
-  const ano = new Date().getFullYear();
   return (
     <footer className="site-footer" aria-label="Rodapé da fazenda">
       <div className="site-footer-inner">
@@ -37,18 +36,6 @@ export default function Footer() {
 
         <div className="site-footer-anno">
           ❧ Anno MCMI ❧
-        </div>
-
-        <div className="site-footer-credits">
-          <span>Caderno da Fazenda · © {ano}</span>
-          <span aria-hidden="true">·</span>
-          <span>
-            Ícones por{' '}
-            <a href="https://game-icons.net" target="_blank" rel="noopener noreferrer">
-              game-icons.net
-            </a>
-            {' '}(Lorc &amp; Delapouite, CC BY 3.0)
-          </span>
         </div>
       </div>
     </footer>
