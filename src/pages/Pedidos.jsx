@@ -14,11 +14,15 @@ export default function Pedidos() {
   const isManager = profile?.role === 'gerente' || profile?.role === 'proprietario';
 
   const [pedidos, setPedidos] = useState([]);
+  const [balances, setBalances] = useState({}); // { order_id: { total, assumida, aberto } }
   const [filtro, setFiltro] = useLocalStorage('pedidos:filtro', 'todos');
   const [busca, setBusca] = useLocalStorage('pedidos:busca', '');
   const [ordem, setOrdem] = useLocalStorage('pedidos:ordem', { campo: 'criado_em', dir: 'desc' });
   const [loading, setLoading] = useState(true);
   const [selecionados, setSelecionados] = useState(new Set());
+
+  // Status em que faz sentido mostrar progresso de produção
+  const MOSTRA_PROGRESSO = new Set(['aprovado', 'em_producao', 'entregue', 'pago']);
 
   const trocarOrdem = (campo) => {
     setOrdem(o => o.campo === campo
@@ -36,7 +40,27 @@ export default function Pedidos() {
       .from('orders')
       .select('id, short_code, numero_nota, cliente, status, prazo_entrega, criado_em')
       .order('criado_em', { ascending: false });
-    if (!error) setPedidos(data || []);
+    if (!error) {
+      setPedidos(data || []);
+      // Busca saldos em aberto pra todos os pedidos da lista
+      const ids = (data || []).map(p => p.id);
+      if (ids.length > 0) {
+        const { data: balData } = await supabase
+          .from('order_item_balance')
+          .select('order_id, quantidade_total, quantidade_assumida, quantidade_em_aberto')
+          .in('order_id', ids);
+        const grouped = {};
+        for (const b of (balData || [])) {
+          if (!grouped[b.order_id]) grouped[b.order_id] = { total: 0, assumida: 0, aberto: 0 };
+          grouped[b.order_id].total    += Number(b.quantidade_total)    || 0;
+          grouped[b.order_id].assumida += Number(b.quantidade_assumida) || 0;
+          grouped[b.order_id].aberto   += Number(b.quantidade_em_aberto)|| 0;
+        }
+        setBalances(grouped);
+      } else {
+        setBalances({});
+      }
+    }
     setLoading(false);
   };
   useEffect(() => { carregar(); }, []);
@@ -229,7 +253,30 @@ export default function Pedidos() {
                   </td>
                 )}
                 <td className="num" data-label="Nº Nota">Nº {p.numero_nota}</td>
-                <td data-label="Cliente">{p.cliente || <span className="muted">—</span>}</td>
+                <td data-label="Cliente">
+                  <div>{p.cliente || <span className="muted">—</span>}</div>
+                  {MOSTRA_PROGRESSO.has(p.status) && balances[p.id] && balances[p.id].total > 0 && (() => {
+                    const b = balances[p.id];
+                    const pctAssumida = Math.min(100, Math.round((b.assumida / b.total) * 100));
+                    const tudoAssumido = b.aberto === 0;
+                    return (
+                      <div
+                        className="prod-progress"
+                        aria-label={`${b.aberto} unidades em aberto de ${b.total} totais`}>
+                        <div className="prod-progress-bar">
+                          <div className="prod-progress-fill" style={{ width: pctAssumida + '%' }} />
+                        </div>
+                        <div className="prod-progress-text">
+                          {tudoAssumido ? (
+                            <em>✓ Tudo assumido</em>
+                          ) : (
+                            <><strong>{b.aberto}</strong> em aberto · {b.total} total</>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td data-label="Status"><span className={`badge ${p.status}`}>{statusLabel(p.status)}</span></td>
                 <td data-label="Prazo">{p.prazo_entrega ? new Date(p.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">—</span>}</td>
                 <td data-label="Criado">{new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>

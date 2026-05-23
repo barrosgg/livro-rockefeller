@@ -279,6 +279,45 @@ main.shell:focus-visible {
   color: var(--gold-deep);
 }
 
+/* ---------- Barra de progresso de produção (lista de Pedidos) ---------- */
+.prod-progress {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 240px;
+}
+.prod-progress-bar {
+  height: 5px;
+  background: rgba(176,141,61,.14);
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid rgba(176,141,61,.18);
+}
+.prod-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-deep) 100%);
+  transition: width .4s ease-out;
+  box-shadow: 0 0 6px rgba(176,141,61,.35);
+}
+.prod-progress-text {
+  font-family: 'Lora', serif;
+  font-size: .72rem;
+  color: var(--ink-mute);
+  letter-spacing: .01em;
+  font-variant-numeric: tabular-nums;
+}
+.prod-progress-text strong {
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+.prod-progress-text em {
+  color: var(--ok, #5a7a3e);
+  font-style: italic;
+  font-size: .76rem;
+}
+
 @media (max-width: 540px) {
   .site-footer { padding: 32px 14px 36px; }
   .site-footer-logo { max-width: 130px; max-height: 40px; }
