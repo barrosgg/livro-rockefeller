@@ -298,9 +298,9 @@ export default function NovoPedido() {
       <hr className="divider" />
 
       {/* ---------- Barra de adicionar item (sempre no topo) ---------- */}
-      <div className="card" style={{ background: '#fff', padding: '14px 16px' }}>
+      <div className="card" style={{ background: '#fff', padding: '14px 16px 26px' }}>
         <div className="flex gap-2 wrap" style={{ alignItems: 'flex-end' }}>
-          <div className="field" style={{ flex: '2 1 320px', marginBottom: 0 }}>
+          <div className="field" style={{ flex: '2 1 320px', marginBottom: 0, position: 'relative' }}>
             <label className="flex between center-y">
               <span>Produto</span>
               <button type="button" className="btn ghost sm"
@@ -316,7 +316,20 @@ export default function NovoPedido() {
               onSelect={onProdutoSelect}
               placeholder="Buscar produto…  ( / )"
             />
-            {selProd && <div className="hint">{selProd.categoria} · {fmt(selProd.preco_min)}–{fmt(selProd.preco_max)}</div>}
+            {selProd && (
+              <div
+                className="hint"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: 4,
+                  pointerEvents: 'none',
+                }}>
+                {selProd.categoria} · {fmt(selProd.preco_min)}–{fmt(selProd.preco_max)}
+              </div>
+            )}
           </div>
           <div className="field" style={{ flex: '0 0 110px', marginBottom: 0 }}>
             <label>Quantidade</label>
