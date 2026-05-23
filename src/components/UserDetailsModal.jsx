@@ -125,7 +125,13 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
 
   const { profile: p, auth, stats } = data;
   const meta = auth?.raw_user_meta_data || {};
-  const discordId = meta.provider_id || meta.sub || '—';
+  const customClaims = meta.custom_claims || {};
+  // Discord mudou nomes dos campos em 2023 — checa todas as variantes
+  const discordId      = meta.provider_id || meta.sub || customClaims.id || '—';
+  const discordUsername = meta.preferred_username || meta.user_name ||
+                          meta.username || meta.global_name || meta.name ||
+                          customClaims.global_name || customClaims.username || '—';
+  const discordDisplayName = meta.full_name || meta.name || customClaims.global_name || '—';
   const linkCredencial = `${window.location.origin}/c/${p.public_code}`;
 
   return (
@@ -164,7 +170,8 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
           <div className="ud-info-grid">
             <div><span className="ud-key">Email</span><span className="ud-val">{auth?.email || '—'}</span></div>
             <div><span className="ud-key">Discord ID</span><code className="ud-code">{discordId}</code></div>
-            <div><span className="ud-key">Username Discord</span><code className="ud-code">{meta.preferred_username || meta.user_name || '—'}</code></div>
+            <div><span className="ud-key">Username Discord</span><code className="ud-code">{discordUsername}</code></div>
+            <div><span className="ud-key">Nome no Discord</span><span className="ud-val">{discordDisplayName}</span></div>
             <div><span className="ud-key">Provider</span><span className="ud-val">{auth?.provider || 'discord'}</span></div>
             <div><span className="ud-key">Último login</span><span className="ud-val">{auth?.last_sign_in_at ? new Date(auth.last_sign_in_at).toLocaleString('pt-BR') : '—'}</span></div>
             <div><span className="ud-key">Conta criada</span><span className="ud-val">{auth?.created_at ? new Date(auth.created_at).toLocaleString('pt-BR') : '—'}</span></div>
