@@ -126,6 +126,11 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
   const { profile: p, auth, stats } = data;
   const meta = auth?.raw_user_meta_data || {};
   const customClaims = meta.custom_claims || {};
+  // Email do último login OAuth (mais atualizado) com fallback pro email
+  // do cadastro inicial (auth.users.email — não atualiza em re-logins por design do Supabase)
+  const emailAtual    = meta.email || auth?.email || '—';
+  const emailCadastro = auth?.email || '—';
+  const emailDifere   = meta.email && auth?.email && meta.email !== auth.email;
   // Discord mudou nomes dos campos em 2023 — checa todas as variantes
   const discordId      = meta.provider_id || meta.sub || customClaims.id || '—';
   // Discord moderno usa "username#0" pra indicar "sem discriminador" — limpa esse sufixo
@@ -170,7 +175,15 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
         <section className="ud-section">
           <h3 className="ud-section-title"><span className="ud-icon">◈</span> Discord (Autenticação)</h3>
           <div className="ud-info-grid">
-            <div><span className="ud-key">Email</span><span className="ud-val">{auth?.email || '—'}</span></div>
+            <div>
+              <span className="ud-key">Email atual (Discord)</span>
+              <span className="ud-val">{emailAtual}</span>
+              {emailDifere && (
+                <span className="ud-val muted small" style={{ fontStyle: 'italic', marginTop: 2 }}>
+                  Cadastro original: {emailCadastro}
+                </span>
+              )}
+            </div>
             <div><span className="ud-key">Discord ID</span><code className="ud-code">{discordId}</code></div>
             <div><span className="ud-key">Username Discord</span><code className="ud-code">{discordUsername}</code></div>
             <div><span className="ud-key">Nome no Discord</span><span className="ud-val">{discordDisplayName}</span></div>
