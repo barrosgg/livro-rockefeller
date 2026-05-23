@@ -12,15 +12,18 @@ const ROLES = ['proprietario', 'gerente', 'trabalhador'];
 
 function Tabs({ value, onChange, options }) {
   return (
-    <div className="flex gap-1 wrap mt-2">
+    <nav className="admin-tabs" aria-label="Seções do painel">
       {options.map(o => (
         <button key={o.key}
-          className={`btn sm ${value === o.key ? '' : 'ghost'}`}
+          type="button"
+          className={`admin-tab ${value === o.key ? 'active' : ''}`}
+          aria-current={value === o.key ? 'page' : undefined}
           onClick={() => onChange(o.key)}>
-          {o.label}
+          <span className="admin-tab-icon" aria-hidden="true">{o.icon}</span>
+          <span className="admin-tab-label">{o.label}</span>
         </button>
       ))}
-    </div>
+    </nav>
   );
 }
 
@@ -32,6 +35,8 @@ function UsuariosTab() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [busca, setBusca] = useState('');
+  const [filtroRole, setFiltroRole] = useState('todos');
 
   const carregar = () => supabase.from('profiles').select('*').order('criado_em')
     .then(({ data }) => { setProfiles(data || []); setLoading(false); });
@@ -68,46 +73,123 @@ function UsuariosTab() {
 
   if (loading) return <p className="muted">Carregando…</p>;
 
+  // Stats por role
+  const stats = {
+    total: profiles.length,
+    proprietario: profiles.filter(p => p.role === 'proprietario' && !p.disabled).length,
+    gerente:      profiles.filter(p => p.role === 'gerente' && !p.disabled).length,
+    trabalhador:  profiles.filter(p => p.role === 'trabalhador' && !p.disabled).length,
+    desabilitados:profiles.filter(p => p.disabled).length,
+  };
+
+  // Filtrar lista
+  const filtrados = profiles.filter(p => {
+    if (filtroRole !== 'todos' && p.role !== filtroRole) return false;
+    if (busca) {
+      const q = busca.toLowerCase();
+      return (p.nome_completo || '').toLowerCase().includes(q) ||
+             (p.discord_handle || '').toLowerCase().includes(q) ||
+             (p.identificacao || '').toLowerCase().includes(q);
+    }
+    return true;
+  });
+
   return (
     <>
       {msg && <p className="muted small">{msg.text}</p>}
-      <table className="book mt-2">
+
+      {/* KPIs */}
+      <div className="admin-stats mt-2">
+        <div className="admin-stat"><span className="admin-stat-value">{stats.total}</span><span className="admin-stat-label">membros</span></div>
+        <div className="admin-stat"><span className="admin-stat-value">{stats.proprietario}</span><span className="admin-stat-label">proprietários</span></div>
+        <div className="admin-stat"><span className="admin-stat-value">{stats.gerente}</span><span className="admin-stat-label">gerentes</span></div>
+        <div className="admin-stat"><span className="admin-stat-value">{stats.trabalhador}</span><span className="admin-stat-label">trabalhadores</span></div>
+        {stats.desabilitados > 0 && (
+          <div className="admin-stat danger"><span className="admin-stat-value">{stats.desabilitados}</span><span className="admin-stat-label">desabilitados</span></div>
+        )}
+      </div>
+
+      {/* Busca + filtro por role */}
+      <div className="admin-toolbar mt-2">
+        <div className="search-wrap" style={{ maxWidth: 320 }}>
+          <span className="search-icon" aria-hidden="true">⌕</span>
+          <input
+            type="text"
+            placeholder="Buscar por nome, Discord ou identificação…"
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            className="search-input"
+          />
+          {busca && (
+            <button type="button" className="search-clear"
+              aria-label="Limpar busca"
+              onClick={() => setBusca('')}>✕</button>
+          )}
+        </div>
+        <div className="flex gap-1 wrap filter-chips">
+          {['todos', ...ROLES].map(r => (
+            <button key={r}
+              className={`chip ${filtroRole === r ? 'active' : ''}`}
+              onClick={() => setFiltroRole(r)}>
+              {r === 'todos' ? 'Todos' : r}
+              <span className="chip-count">
+                {r === 'todos' ? profiles.length : profiles.filter(p => p.role === r).length}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filtrados.length === 0 ? (
+        <div className="empty-state mt-2">
+          <div className="empty-state-icon">🔍</div>
+          <p className="muted">Nenhum membro encontrado com este filtro.</p>
+        </div>
+      ) : (
+      <table className="book mt-2 user-table">
         <thead>
           <tr>
-            <th>Nome</th><th>Discord</th><th>Identif.</th><th>Conta</th><th>Correio</th>
-            <th style={{ width: 140 }}>Papel</th>
-            <th style={{ width: 110 }}>Status</th>
-            <th style={{ width: 140 }}></th>
+            <th>Membro</th>
+            <th>Documentos</th>
+            <th style={{ width: 150 }}>Papel</th>
+            <th style={{ width: 120 }}>Status</th>
+            <th style={{ width: 180 }}></th>
           </tr>
         </thead>
         <tbody>
-          {profiles.map(p => (
-            <tr key={p.id} style={{ opacity: p.disabled ? 0.55 : 1 }}>
-              <td>
-                <div className="flex gap-1 center-y">
-                  <Avatar slug={p.avatar} name={p.nome_completo} size={28} />
-                  <span>{p.nome_completo || <span className="muted">—</span>}</span>
+          {filtrados.map(p => (
+            <tr key={p.id} className={`user-row ${p.disabled ? 'is-disabled' : ''}`}>
+              <td data-label="Membro">
+                <div className="user-cell">
+                  <Avatar slug={p.avatar} name={p.nome_completo} size={38} />
+                  <div className="user-info">
+                    <div className="user-name">{p.nome_completo || <span className="muted">— sem nome —</span>}</div>
+                    <div className="user-discord">@{p.discord_handle || '?'}</div>
+                  </div>
                 </div>
               </td>
-              <td>{p.discord_handle || <span className="muted">—</span>}</td>
-              <td>{p.identificacao || <span className="muted">—</span>}</td>
-              <td>{p.conta_bancaria || <span className="muted">—</span>}</td>
-              <td>{p.correio || <span className="muted">—</span>}</td>
-              <td>
-                <select value={p.role} onChange={e => mudarRole(p.id, e.target.value)}>
+              <td data-label="Documentos">
+                <div className="docs-cell">
+                  <div className="doc-line"><span className="doc-key">Identif.</span><span className="doc-val">{p.identificacao || <span className="muted">—</span>}</span></div>
+                  <div className="doc-line"><span className="doc-key">Conta</span><span className="doc-val">{p.conta_bancaria || <span className="muted">—</span>}</span></div>
+                  <div className="doc-line"><span className="doc-key">Correio</span><span className="doc-val">{p.correio || <span className="muted">—</span>}</span></div>
+                </div>
+              </td>
+              <td data-label="Papel">
+                <select className="role-select" value={p.role} onChange={e => mudarRole(p.id, e.target.value)}>
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
-              <td>
+              <td data-label="Status">
                 {p.disabled
-                  ? <span className="badge cancelado">Desabilitado</span>
-                  : <span className="badge aprovado">Ativo</span>}
+                  ? <span className="badge cancelado"><span className="badge-icon">✕</span>Desabilitado</span>
+                  : <span className="badge aprovado"><span className="badge-icon">✓</span>Ativo</span>}
               </td>
-              <td>
-                <div className="flex gap-1">
-                  <button className="btn ghost sm" onClick={() => setEditing(p)}>editar</button>
+              <td data-label="" className="cell-actions">
+                <div className="flex gap-1" style={{ justifyContent: 'flex-end' }}>
+                  <button className="btn ghost sm" onClick={() => setEditing(p)}>✎ editar</button>
                   <button className={`btn sm ${p.disabled ? 'success' : 'danger'}`} onClick={() => toggleDisabled(p)}>
-                    {p.disabled ? 'reativar' : 'desabilitar'}
+                    {p.disabled ? '↺ reativar' : '⊘ desabilitar'}
                   </button>
                 </div>
               </td>
@@ -115,6 +197,7 @@ function UsuariosTab() {
           ))}
         </tbody>
       </table>
+      )}
 
       {editing && (
         <div className="card mt-3" style={{ borderColor: 'var(--gold)' }}>
@@ -883,34 +966,49 @@ function EstatisticasTab() {
 
 /* ========================= ROOT ========================= */
 const TABS = [
-  { key: 'usuarios',    label: 'Usuários' },
-  { key: 'produtos',    label: 'Produtos' },
-  { key: 'categorias',  label: 'Categorias' },
-  { key: 'templates',   label: 'Templates' },
-  { key: 'config',      label: 'Configurações' },
-  { key: 'audit',       label: 'Auditoria' },
-  { key: 'financeiro',  label: 'Financeiro' },
-  { key: 'backup',      label: 'Backup' },
-  { key: 'stats',       label: 'Estatísticas' },
+  { key: 'usuarios',    label: 'Usuários',     icon: '☥', desc: 'Gerencie acesso, papéis e habilitação dos membros da fazenda.' },
+  { key: 'produtos',    label: 'Produtos',     icon: '✿', desc: 'Catálogo de produtos com faixa de preço e ícone visual.' },
+  { key: 'categorias',  label: 'Categorias',   icon: '❖', desc: 'Categorias usadas para agrupar produtos no catálogo.' },
+  { key: 'templates',   label: 'Templates',    icon: '▤', desc: 'Modelos de pedido salvos para reutilizar rapidamente.' },
+  { key: 'config',      label: 'Configurações',icon: '⚙', desc: 'Comissão da Fazenda e parâmetros gerais do sistema.' },
+  { key: 'audit',       label: 'Auditoria',    icon: '☞', desc: 'Histórico de eventos importantes — aprovações, cancelamentos, pagamentos.' },
+  { key: 'financeiro',  label: 'Financeiro',   icon: '◈', desc: 'Pagamentos pendentes e realizados por trabalhador.' },
+  { key: 'backup',      label: 'Backup',       icon: '⊟', desc: 'Exporte dados em CSV para snapshots manuais.' },
+  { key: 'stats',       label: 'Estatísticas', icon: '▦', desc: 'Métricas globais da fazenda — produção, receita, top trabalhadores.' },
 ];
 
 export default function Admin() {
   const [tab, setTab] = useState('usuarios');
+  const current = TABS.find(t => t.key === tab) || TABS[0];
   return (
-    <div className="page">
-      <h1 className="mt-0">Administração</h1>
-      <p className="muted small">Painel exclusivo do Proprietário.</p>
-      <Tabs value={tab} onChange={setTab} options={TABS} />
-      <hr className="divider" />
-      {tab === 'usuarios'   && <UsuariosTab />}
-      {tab === 'produtos'   && <ProdutosTab />}
-      {tab === 'categorias' && <CategoriasTab />}
-      {tab === 'templates'  && <TemplatesTab />}
-      {tab === 'config'     && <ConfigTab />}
-      {tab === 'audit'      && <AuditTab />}
-      {tab === 'financeiro' && <FinanceiroTab />}
-      {tab === 'backup'     && <BackupTab />}
-      {tab === 'stats'      && <EstatisticasTab />}
+    <div className="page admin-page">
+      <header className="admin-header">
+        <h1 className="mt-0">Administração</h1>
+        <p className="muted mt-0">Painel exclusivo do Proprietário.</p>
+      </header>
+
+      <div className="admin-layout">
+        <Tabs value={tab} onChange={setTab} options={TABS} />
+
+        <main className="admin-content">
+          <div className="admin-tab-header">
+            <h2 className="mt-0">
+              <span className="admin-tab-header-icon" aria-hidden="true">{current.icon}</span>
+              {current.label}
+            </h2>
+            <p className="muted mt-0">{current.desc}</p>
+          </div>
+          {tab === 'usuarios'   && <UsuariosTab />}
+          {tab === 'produtos'   && <ProdutosTab />}
+          {tab === 'categorias' && <CategoriasTab />}
+          {tab === 'templates'  && <TemplatesTab />}
+          {tab === 'config'     && <ConfigTab />}
+          {tab === 'audit'      && <AuditTab />}
+          {tab === 'financeiro' && <FinanceiroTab />}
+          {tab === 'backup'     && <BackupTab />}
+          {tab === 'stats'      && <EstatisticasTab />}
+        </main>
+      </div>
     </div>
   );
 }
