@@ -236,127 +236,148 @@ export default function NovoPedido() {
   const temDraft = itens.length > 0 || cliente || anotacoes || descontoPct > 0 || prazo;
 
   return (
-    <div className="page" style={{ paddingBottom: 100 }}>
-      <div className="flex between center-y wrap gap-2">
-        <div>
+    <div className="page novo-pedido" style={{ paddingBottom: 100 }}>
+      {/* ---------- Cabeçalho ---------- */}
+      <div className="np-header">
+        <div className="np-header-main">
           <h1 className="mt-0">Novo Pedido</h1>
-          <div className="muted small">
-            Nota Nº {numero}
-            {temDraft && <> · <em>rascunho salvo automaticamente</em> · <button
-              type="button"
-              aria-label="Descartar rascunho"
-              className="btn ghost sm" style={{ padding: '2px 8px', fontSize: '.74rem' }}
-              onClick={async () => {
-                const ok = await confirmar?.(
-                  'O rascunho será apagado. Itens não enviados serão perdidos.',
-                  { title: 'Descartar rascunho?', danger: true, confirmLabel: 'Descartar' });
-                if (ok) limparDraft();
-              }}>descartar</button></>}
+          <div className="np-meta">
+            <span className="np-nota">Nota Nº <strong>{numero}</strong></span>
+            {temDraft && (
+              <>
+                <span className="np-meta-sep">·</span>
+                <span className="np-draft-status">
+                  <span className="np-draft-dot" aria-hidden="true" />
+                  rascunho salvo
+                </span>
+                <button
+                  type="button"
+                  aria-label="Descartar rascunho"
+                  className="np-link-danger"
+                  onClick={async () => {
+                    const ok = await confirmar?.(
+                      'O rascunho será apagado. Itens não enviados serão perdidos.',
+                      { title: 'Descartar rascunho?', danger: true, confirmLabel: 'Descartar' });
+                    if (ok) limparDraft();
+                  }}>descartar</button>
+              </>
+            )}
           </div>
         </div>
-        <div className="flex gap-1 small muted" style={{ alignItems: 'center' }}>
-          <Kbd>/</Kbd> buscar
-          <Kbd>↵</Kbd> adicionar
-          <Kbd>Ctrl</Kbd>+<Kbd>↵</Kbd> aprovar
-          <Kbd>Ctrl</Kbd>+<Kbd>S</Kbd> rascunho
+        <div className="np-shortcuts">
+          <span><Kbd>/</Kbd> buscar</span>
+          <span><Kbd>↵</Kbd> adicionar</span>
+          <span><Kbd>Ctrl</Kbd>+<Kbd>↵</Kbd> aprovar</span>
+          <span><Kbd>Ctrl</Kbd>+<Kbd>S</Kbd> rascunho</span>
         </div>
       </div>
 
-      {/* ---------- Templates (carregar / salvar) ---------- */}
-      {(templates.length > 0 || itens.length > 0) && (
-        <div className="card mt-2" style={{ background: 'transparent', borderStyle: 'dashed' }}>
-          <div className="flex between center-y wrap gap-2">
-            {templates.length > 0 ? (
-              <div className="flex gap-1 center-y wrap">
-                <span className="muted small">Carregar template:</span>
-                <select onChange={e => e.target.value && carregarTemplate(e.target.value)} value="">
-                  <option value="">— escolha —</option>
-                  {templates.map(t => (
-                    <option key={t.id} value={t.id}>{t.nome} ({(t.items || []).length} itens)</option>
-                  ))}
-                </select>
-              </div>
-            ) : <div />}
-            {itens.length > 0 && (
-              salvarTplOpen ? (
-                <div className="flex gap-1 center-y wrap">
-                  <input type="text" placeholder="Nome do template" value={tplNome}
-                    onChange={e => setTplNome(e.target.value)} autoFocus style={{ minWidth: 200 }} />
-                  <button className="btn sm" onClick={salvarComoTemplate}>Salvar</button>
-                  <button className="btn ghost sm" onClick={() => { setSalvarTplOpen(false); setTplNome(''); }}>Cancelar</button>
-                </div>
-              ) : (
-                <button className="btn ghost sm" onClick={() => setSalvarTplOpen(true)}>
-                  💾 Salvar como template
-                </button>
-              )
-            )}
-          </div>
+      {/* ---------- Barra de adicionar item ---------- */}
+      <section className="np-section">
+        <div className="np-section-header">
+          <h2 className="mt-0">Adicionar Item</h2>
+          {templates.length > 0 && (
+            <div className="np-template-load">
+              <label htmlFor="tpl-load" className="muted small">Carregar template:</label>
+              <select id="tpl-load" value="" onChange={e => e.target.value && carregarTemplate(e.target.value)}>
+                <option value="">— escolha —</option>
+                {templates.map(t => (
+                  <option key={t.id} value={t.id}>{t.nome} ({(t.items || []).length} itens)</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
-      )}
 
-      <hr className="divider" />
-
-      {/* ---------- Barra de adicionar item (sempre no topo) ---------- */}
-      <div className="card" style={{ background: '#fff', padding: '14px 16px 26px' }}>
-        <div className="flex gap-2 wrap" style={{ alignItems: 'flex-end' }}>
-          <div className="field" style={{ flex: '2 1 320px', marginBottom: 0, position: 'relative' }}>
-            <label className="flex between center-y">
-              <span>Produto</span>
-              <button type="button" className="btn ghost sm"
-                style={{ padding: '2px 8px', fontSize: '.7rem' }}
-                onClick={() => setNovoProdutoOpen(true)}>
-                + Criar novo
-              </button>
-            </label>
-            <ProdutoCombo
-              ref={comboRef}
-              produtos={produtos}
-              value={selProd}
-              onSelect={onProdutoSelect}
-              placeholder="Buscar produto…  ( / )"
-            />
-            {selProd && (
-              <div
-                className="hint"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  marginTop: 4,
-                  pointerEvents: 'none',
-                }}>
-                {selProd.categoria} · {fmt(selProd.preco_min)}–{fmt(selProd.preco_max)}
+        <div className="np-add-card">
+          {/* Linha 1: Produto + Quantidade + Adicionar */}
+          <div className="np-add-row">
+            <div className="np-field np-field-produto">
+              <label className="np-field-label">
+                <span>Produto</span>
+                <button type="button" className="np-mini-link"
+                  onClick={() => setNovoProdutoOpen(true)}>
+                  + Criar novo
+                </button>
+              </label>
+              <ProdutoCombo
+                ref={comboRef}
+                produtos={produtos}
+                value={selProd}
+                onSelect={onProdutoSelect}
+                placeholder="Buscar produto…  ( / )"
+              />
+              {/* Reserva sempre 1 linha pra dica — evita layout shift */}
+              <div className="np-field-hint">
+                {selProd
+                  ? <>{selProd.categoria} · {fmt(selProd.preco_min)}–{fmt(selProd.preco_max)}</>
+                  : <span className="muted np-hint-placeholder">Selecione um produto para ver a faixa de preço</span>}
               </div>
-            )}
+            </div>
+
+            <div className="np-field np-field-qtd">
+              <label className="np-field-label">Quantidade</label>
+              <input ref={qtdRef} type="number" min="1" value={qtd}
+                className="np-qtd-input"
+                onChange={(e) => setQtd(Number(e.target.value) || 0)}
+                onKeyDown={onQtdKey} />
+              <div className="np-field-hint">&nbsp;</div>
+            </div>
+
+            <div className="np-field np-field-action">
+              {/* spacer placeholder pra alinhar com inputs */}
+              <div className="np-field-label" aria-hidden="true">&nbsp;</div>
+              <button
+                className="np-btn-add"
+                disabled={!selProd || qtd <= 0}
+                onClick={() => adicionar()}
+                aria-label="Adicionar item ao pedido">
+                Adicionar <span aria-hidden="true">→</span>
+              </button>
+              <div className="np-field-hint">&nbsp;</div>
+            </div>
           </div>
-          <div className="field" style={{ flex: '0 0 110px', marginBottom: 0 }}>
-            <label>Quantidade</label>
-            <input ref={qtdRef} type="number" min="1" value={qtd}
-              style={{ textAlign: 'center' }}
-              onChange={(e) => setQtd(Number(e.target.value) || 0)}
-              onKeyDown={onQtdKey} />
-          </div>
-          <div className="flex gap-1 wrap" style={{ marginBottom: 1, alignSelf: 'flex-end' }}>
+
+          {/* Linha 2: Atalhos de quantidade */}
+          <div className="np-presets">
+            <span className="np-presets-label">Atalhos:</span>
             {QTD_PRESETS.map(n => (
-              <button key={n} type="button" className="btn ghost sm"
-                style={{ minWidth: 44, padding: '6px 10px' }}
+              <button key={n} type="button"
+                className={`np-preset ${qtd === n ? 'active' : ''}`}
                 onClick={() => setQtd(n)}>{n}</button>
             ))}
           </div>
-          <button className="btn lg" disabled={!selProd || qtd <= 0} onClick={() => adicionar()}>
-            Adicionar
-          </button>
         </div>
-      </div>
+      </section>
 
-      {/* ---------- Lista de itens ---------- */}
-      <h2 className="mt-3">Itens ({itens.length})</h2>
+      {/* ---------- Lista de itens (sempre renderiza container) ---------- */}
+      <section className="np-section">
+        <div className="np-section-header">
+          <h2 className="mt-0">Itens <span className="np-count">({itens.length})</span></h2>
+          {itens.length > 0 && (
+            salvarTplOpen ? (
+              <div className="flex gap-1 center-y wrap">
+                <input type="text" placeholder="Nome do template" value={tplNome}
+                  onChange={e => setTplNome(e.target.value)} autoFocus
+                  style={{ minWidth: 200, padding: '6px 10px' }} />
+                <button className="btn sm" onClick={salvarComoTemplate}>Salvar</button>
+                <button className="btn ghost sm" onClick={() => { setSalvarTplOpen(false); setTplNome(''); }}>Cancelar</button>
+              </div>
+            ) : (
+              <button className="np-mini-link" onClick={() => setSalvarTplOpen(true)}>
+                💾 Salvar como template
+              </button>
+            )
+          )}
+        </div>
+
       {itens.length === 0 ? (
-        <div className="card center"><p className="muted it mt-0">
-          Nenhum item ainda. Pressione <Kbd>/</Kbd> para buscar.
-        </p></div>
+        <div className="np-empty">
+          <div className="np-empty-icon" aria-hidden="true">📜</div>
+          <p className="muted it mt-0">
+            Nenhum item ainda. Pressione <Kbd>/</Kbd> para buscar produtos.
+          </p>
+        </div>
       ) : (
         <table className="book" style={{ tableLayout: 'fixed' }}>
           <colgroup>
@@ -416,9 +437,13 @@ export default function NovoPedido() {
           </tbody>
         </table>
       )}
+      </section>
 
       {/* ---------- Configurações secundárias ---------- */}
-      <h2 className="mt-3">Configurações do Pedido</h2>
+      <section className="np-section">
+        <div className="np-section-header">
+          <h2 className="mt-0">Configurações do Pedido</h2>
+        </div>
       <div className="card">
         <div className="row">
           <div className="field" style={{ flex: '2 1 260px' }}>
@@ -443,52 +468,35 @@ export default function NovoPedido() {
             placeholder="Observações para os trabalhadores (opcional, até 280 caracteres)" />
         </div>
       </div>
+      </section>
 
       {erro && <p style={{ color: 'var(--burgundy)' }} className="mt-2">{erro}</p>}
 
       {/* ---------- Sticky bottom bar com totais + ações ---------- */}
-      <div style={{
-        position: 'sticky', bottom: 0, marginTop: 28,
-        background: 'var(--paper)',
-        borderTop: '1px solid var(--paper-edge)',
-        padding: '14px 4px 6px',
-        zIndex: 5,
-      }}>
-        <div className="flex between center-y wrap" style={{ gap: 24 }}>
-          {/* Totais com separadores verticais */}
-          <div className="flex wrap" style={{ alignItems: 'baseline', gap: 0 }}>
-            <div style={{ padding: '0 18px 0 0', borderRight: '1px solid var(--paper-edge)' }}>
-              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Subtotal</div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.05rem', fontWeight: 600 }}>
-                {fmt(calc.subtotal)}
-              </div>
-            </div>
-            <div style={{ padding: '0 18px', borderRight: '1px solid var(--paper-edge)' }}>
-              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Desconto</div>
-              <div style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: '1.05rem',
-                fontWeight: 600,
-                color: calc.descAbs > 0 ? 'var(--burgundy)' : 'var(--ink-faded)',
-              }}>
-                {calc.descAbs > 0 ? `−${fmt(calc.descAbs)}` : fmt(0)}
-              </div>
-            </div>
-            <div style={{ padding: '0 18px' }}>
-              <div className="muted small" style={{ fontSize: '.72rem', letterSpacing: '.04em', textTransform: 'uppercase' }}>Total</div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', fontWeight: 700, color: 'var(--gold-deep)', lineHeight: 1 }}>
-                {fmt(calc.total)}
-              </div>
+      <div className="np-actions-bar">
+        <div className="np-totals">
+          <div className="np-total-block">
+            <div className="np-total-label">Subtotal</div>
+            <div className="np-total-value">{fmt(calc.subtotal)}</div>
+          </div>
+          <div className="np-total-block">
+            <div className="np-total-label">Desconto</div>
+            <div className={`np-total-value ${calc.descAbs > 0 ? 'has-disc' : 'no-disc'}`}>
+              {calc.descAbs > 0 ? `−${fmt(calc.descAbs)}` : fmt(0)}
             </div>
           </div>
-          <div className="flex gap-1 wrap">
-            <button className="btn ghost" disabled={salvando} onClick={() => salvar('rascunho')}>
-              Salvar Rascunho <Kbd>Ctrl S</Kbd>
-            </button>
-            <button className="btn" disabled={salvando || itens.length === 0} onClick={() => salvar('aprovado')}>
-              {salvando ? 'Salvando…' : <>Aprovar &amp; Enviar <Kbd>Ctrl ↵</Kbd></>}
-            </button>
+          <div className="np-total-block np-total-final">
+            <div className="np-total-label">Total</div>
+            <div className="np-total-value np-total-final-value">{fmt(calc.total)}</div>
           </div>
+        </div>
+        <div className="np-actions">
+          <button className="btn ghost" disabled={salvando} onClick={() => salvar('rascunho')}>
+            Salvar Rascunho <Kbd>Ctrl S</Kbd>
+          </button>
+          <button className="btn" disabled={salvando || itens.length === 0} onClick={() => salvar('aprovado')}>
+            {salvando ? 'Salvando…' : <>Aprovar &amp; Enviar <Kbd>Ctrl ↵</Kbd></>}
+          </button>
         </div>
       </div>
 
