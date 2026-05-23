@@ -973,6 +973,153 @@ function EstatisticasTab() {
   );
 }
 
+/* ========================= DISCORD ========================= */
+function DiscordTab() {
+  const { settings, setSetting } = useSettings();
+  const { showToast } = useUI() || {};
+  const stored = settings.discord_webhooks || { pedidos: '', producao: '', financeiro: '' };
+  const [local, setLocal] = useState(stored);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(null);
+
+  useEffect(() => { setLocal(stored); /* eslint-disable-next-line */ }, [settings.discord_webhooks]);
+
+  const dirty = JSON.stringify(local) !== JSON.stringify(stored);
+
+  const salvar = async () => {
+    setSaving(true);
+    try {
+      // Normaliza: trim e remove espaços
+      const clean = Object.fromEntries(
+        Object.entries(local).map(([k, v]) => [k, (v || '').trim()])
+      );
+      await setSetting('discord_webhooks', clean);
+      showToast?.('Webhooks salvos.', { type: 'success' });
+    } catch (e) {
+      showToast?.(e.message, { type: 'error' });
+    }
+    setSaving(false);
+  };
+
+  const testar = async (canal) => {
+    if (!stored[canal]) {
+      showToast?.('Salve a URL antes de testar.', { type: 'error' });
+      return;
+    }
+    setTesting(canal);
+    const { error } = await supabase.rpc('test_discord_webhook', { canal });
+    setTesting(null);
+    if (error) showToast?.(error.message, { type: 'error' });
+    else showToast?.(`Mensagem de teste enviada ao canal "${canal}". Veja seu Discord.`, { type: 'success' });
+  };
+
+  const CANAIS = [
+    {
+      key: 'pedidos',
+      titulo: '📜 Canal de Pedidos',
+      desc: 'Recebe notificações de pedidos aprovados, cancelados e concluídos.',
+      eventos: ['pedido aprovado', 'pedido cancelado', 'pedido concluído'],
+    },
+    {
+      key: 'producao',
+      titulo: '🛠 Canal de Produção',
+      desc: 'Recebe notificações quando trabalhadores assumem produção.',
+      eventos: ['claim assumido por trabalhador'],
+    },
+    {
+      key: 'financeiro',
+      titulo: '💰 Canal Financeiro',
+      desc: 'Recebe notificações de entregas no baú e pagamentos confirmados.',
+      eventos: ['claim entregue', 'pagamento confirmado'],
+    },
+  ];
+
+  return (
+    <>
+      <div className="admin-note mt-2">
+        <span className="admin-note-icon" aria-hidden="true">ⓘ</span>
+        <div>
+          As notificações aparecem automaticamente no Discord quando eventos importantes acontecem.
+          Você pode usar o <strong>mesmo URL</strong> para todos os canais (vai pra um único canal) ou separar em 3 canais distintos.
+          {' '}<a href="https://support.discord.com/hc/pt-br/articles/228383668" target="_blank" rel="noopener noreferrer">
+            Como criar um webhook do Discord →
+          </a>
+        </div>
+      </div>
+
+      <div className="discord-cards mt-2">
+        {CANAIS.map(c => (
+          <div key={c.key} className="discord-card">
+            <div className="discord-card-header">
+              <h3 className="mt-0">{c.titulo}</h3>
+              <p className="muted small mt-0">{c.desc}</p>
+              <div className="discord-eventos">
+                {c.eventos.map(e => <span key={e} className="discord-evento-chip">{e}</span>)}
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor={`wh-${c.key}`}>URL do webhook</label>
+              <input
+                id={`wh-${c.key}`}
+                type="url"
+                placeholder="https://discord.com/api/webhooks/..."
+                value={local[c.key] || ''}
+                onChange={e => setLocal(l => ({ ...l, [c.key]: e.target.value }))}
+                style={{ fontFamily: 'monospace', fontSize: '.84rem' }}
+              />
+            </div>
+
+            <div className="flex gap-1">
+              <button
+                type="button"
+                className="btn ghost sm"
+                disabled={testing === c.key || !stored[c.key]}
+                onClick={() => testar(c.key)}
+                title={!stored[c.key] ? 'Salve a URL primeiro' : 'Enviar mensagem de teste'}>
+                {testing === c.key ? 'Enviando…' : '✓ Testar canal'}
+              </button>
+              {local[c.key] && local[c.key] !== stored[c.key] && (
+                <span className="muted small" style={{ alignSelf: 'center' }}>
+                  ⚠ alteração não salva
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-1 mt-2" style={{ justifyContent: 'flex-end' }}>
+        {dirty && (
+          <button className="btn ghost" onClick={() => setLocal(stored)}>
+            Descartar alterações
+          </button>
+        )}
+        <button className="btn" disabled={saving || !dirty} onClick={salvar}>
+          {saving ? 'Salvando…' : 'Salvar webhooks'}
+        </button>
+      </div>
+
+      <details className="discord-howto mt-3">
+        <summary>Como criar um webhook do Discord (passo a passo)</summary>
+        <ol>
+          <li>No Discord, vá no canal desejado e clique no <strong>⚙ ícone de configurações</strong> ao lado do nome do canal.</li>
+          <li>Clique em <strong>Integrações</strong> no menu lateral.</li>
+          <li>Clique em <strong>Webhooks</strong> → <strong>Novo Webhook</strong>.</li>
+          <li>Dê um nome (ex: "Caderno da Fazenda") e opcionalmente um avatar (use o logo da família).</li>
+          <li>Clique em <strong>Copiar URL do Webhook</strong>.</li>
+          <li>Cole aqui no campo correspondente e clique em <strong>Salvar webhooks</strong>.</li>
+          <li>Clique em <strong>✓ Testar canal</strong> para confirmar que está funcionando.</li>
+        </ol>
+        <p className="muted small">
+          <strong>Segurança:</strong> qualquer pessoa com o URL pode postar no canal. Mantenha em sigilo.
+          Apenas o Proprietário enxerga esses URLs no Caderno (RLS no Postgres protege isso).
+        </p>
+      </details>
+    </>
+  );
+}
+
 /* ========================= ROOT ========================= */
 const TABS = [
   { key: 'usuarios',    label: 'Usuários',     icon: '☥', desc: 'Gerencie acesso, papéis e habilitação dos membros da fazenda.' },
@@ -980,6 +1127,7 @@ const TABS = [
   { key: 'categorias',  label: 'Categorias',   icon: '❖', desc: 'Categorias usadas para agrupar produtos no catálogo.' },
   { key: 'templates',   label: 'Templates',    icon: '▤', desc: 'Modelos de pedido salvos para reutilizar rapidamente.' },
   { key: 'config',      label: 'Configurações',icon: '⚙', desc: 'Comissão da Fazenda e parâmetros gerais do sistema.' },
+  { key: 'discord',     label: 'Discord',      icon: '✦', desc: 'Notificações automáticas via webhooks do Discord. Embeds ricos quando pedidos e produções mudam de status.' },
   { key: 'audit',       label: 'Auditoria',    icon: '☞', desc: 'Histórico de eventos importantes — aprovações, cancelamentos, pagamentos.' },
   { key: 'financeiro',  label: 'Financeiro',   icon: '◈', desc: 'Pagamentos pendentes e realizados por trabalhador.' },
   { key: 'backup',      label: 'Backup',       icon: '⊟', desc: 'Exporte dados em CSV para snapshots manuais.' },
@@ -1012,6 +1160,7 @@ export default function Admin() {
           {tab === 'categorias' && <CategoriasTab />}
           {tab === 'templates'  && <TemplatesTab />}
           {tab === 'config'     && <ConfigTab />}
+          {tab === 'discord'    && <DiscordTab />}
           {tab === 'audit'      && <AuditTab />}
           {tab === 'financeiro' && <FinanceiroTab />}
           {tab === 'backup'     && <BackupTab />}

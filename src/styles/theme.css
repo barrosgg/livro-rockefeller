@@ -1087,6 +1087,76 @@ main.shell:focus-visible {
 }
 .admin-tab-header p { font-size: .9rem; line-height: 1.45; }
 
+/* Discord tab — cards de canal + how-to */
+.discord-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+.discord-card {
+  background: #fff;
+  border: 1px solid var(--paper-edge);
+  border-left: 3px solid #5865F2; /* roxo Discord */
+  border-radius: var(--r-sm);
+  padding: 16px 18px;
+}
+.discord-card-header { margin-bottom: 10px; }
+.discord-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+.discord-eventos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.discord-evento-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: 999px;
+  font-size: .7rem;
+  color: var(--ink-mute);
+  font-family: 'Lora', serif;
+  font-style: italic;
+}
+.discord-howto {
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--r-sm);
+  padding: 12px 18px;
+  font-size: .88rem;
+}
+.discord-howto summary {
+  cursor: pointer;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+  padding: 4px 0;
+}
+.discord-howto summary::before {
+  content: '▸ ';
+  display: inline-block;
+  transition: transform .15s;
+  color: var(--gold-deep);
+}
+.discord-howto[open] summary::before {
+  transform: rotate(90deg);
+}
+.discord-howto ol {
+  margin: 12px 0 0 0;
+  padding-left: 24px;
+  line-height: 1.7;
+}
+.discord-howto li { margin-bottom: 4px; }
+.discord-howto p { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--paper-edge); }
+
 /* Nota informativa do admin */
 .admin-note {
   display: flex;
