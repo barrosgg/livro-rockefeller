@@ -98,6 +98,15 @@ function UsuariosTab() {
     <>
       {msg && <p className="muted small">{msg.text}</p>}
 
+      {/* Nota sobre permissões */}
+      <div className="admin-note mt-2">
+        <span className="admin-note-icon" aria-hidden="true">ⓘ</span>
+        <div>
+          Todo novo membro entra como <strong>trabalhador</strong> ao se cadastrar pelo Discord.
+          Promova manualmente para <strong>gerente</strong> ou <strong>proprietário</strong> usando o seletor de papel abaixo.
+        </div>
+      </div>
+
       {/* KPIs */}
       <div className="admin-stats mt-2">
         <div className="admin-stat"><span className="admin-stat-value">{stats.total}</span><span className="admin-stat-label">membros</span></div>
