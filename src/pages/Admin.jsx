@@ -7,6 +7,7 @@ import { toCsv, downloadCsv } from '../lib/csv.js';
 import { useUI } from '../lib/ui.jsx';
 import Avatar from '../components/Avatar.jsx';
 import ProductIcon from '../components/ProductIcon.jsx';
+import UserDetailsModal from '../components/UserDetailsModal.jsx';
 
 const ROLES = ['proprietario', 'gerente', 'trabalhador'];
 
@@ -34,6 +35,7 @@ function UsuariosTab() {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+  const [detalheId, setDetalheId] = useState(null);
   const [msg, setMsg] = useState(null);
   const [busca, setBusca] = useState('');
   const [filtroRole, setFiltroRole] = useState('todos');
@@ -196,7 +198,9 @@ function UsuariosTab() {
               </td>
               <td data-label="" className="cell-actions">
                 <div className="flex gap-1" style={{ justifyContent: 'flex-end' }}>
-                  <button className="btn ghost sm" onClick={() => setEditing(p)}>✎ editar</button>
+                  <button className="btn-abrir" onClick={() => setDetalheId(p.id)} aria-label={`Ver detalhes de ${p.nome_completo || 'membro'}`}>
+                    Detalhes <span aria-hidden="true">→</span>
+                  </button>
                   <button className={`btn sm ${p.disabled ? 'success' : 'danger'}`} onClick={() => toggleDisabled(p)}>
                     {p.disabled ? '↺ reativar' : '⊘ desabilitar'}
                   </button>
@@ -208,41 +212,12 @@ function UsuariosTab() {
       </table>
       )}
 
-      {editing && (
-        <div className="card mt-3" style={{ borderColor: 'var(--gold)' }}>
-          <h3 className="mt-0">Editar Usuário</h3>
-          <div className="row">
-            <div className="field" style={{ flex: '1 1 240px' }}>
-              <label>Nome completo</label>
-              <input type="text" value={editing.nome_completo || ''}
-                onChange={e => setEditing({ ...editing, nome_completo: e.target.value })} />
-            </div>
-            <div className="field" style={{ flex: '1 1 200px' }}>
-              <label>Identificação</label>
-              <input type="text" value={editing.identificacao || ''}
-                onChange={e => setEditing({ ...editing, identificacao: e.target.value })} />
-            </div>
-            <div className="field" style={{ flex: '1 1 200px' }}>
-              <label>Discord</label>
-              <input type="text" value={editing.discord_handle || ''}
-                onChange={e => setEditing({ ...editing, discord_handle: e.target.value })} />
-            </div>
-            <div className="field" style={{ flex: '1 1 180px' }}>
-              <label>Conta bancária</label>
-              <input type="text" value={editing.conta_bancaria || ''}
-                onChange={e => setEditing({ ...editing, conta_bancaria: e.target.value })} />
-            </div>
-            <div className="field" style={{ flex: '1 1 200px' }}>
-              <label>Correio</label>
-              <input type="text" value={editing.correio || ''}
-                onChange={e => setEditing({ ...editing, correio: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex gap-1 mt-1">
-            <button className="btn" onClick={salvarEdit}>Salvar</button>
-            <button className="btn ghost" onClick={() => setEditing(null)}>Cancelar</button>
-          </div>
-        </div>
+      {detalheId && (
+        <UserDetailsModal
+          userId={detalheId}
+          onClose={() => setDetalheId(null)}
+          onUpdate={() => carregar()}
+        />
       )}
     </>
   );
