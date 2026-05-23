@@ -113,11 +113,13 @@ p { margin: 0 0 .7em 0; }
 
 /* ---------- Página / Cartão ---------- */
 .page {
+  width: 100%;
   background: var(--paper);
   border-radius: var(--r);
   padding: 28px 32px;
   border: 1px solid var(--paper-edge);
   box-shadow: 0 1px 3px rgba(60,40,10,.05), 0 4px 16px rgba(60,40,10,.04);
+  box-sizing: border-box;
 }
 
 .card {
@@ -128,9 +130,11 @@ p { margin: 0 0 .7em 0; }
 }
 
 .shell {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px 16px 60px;
+  box-sizing: border-box;
 }
 @media (max-width: 1280px) {
   .shell { max-width: 1180px; }
@@ -982,9 +986,12 @@ main.shell:focus-visible {
 
 .admin-layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  /* minmax(0, 1fr) impede que conteúdo (tabela larga) expanda a coluna
+     além do espaço disponível — chave pra largura estável entre abas */
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 28px;
   margin-top: 16px;
+  width: 100%;
 }
 
 .admin-tabs {
@@ -1038,7 +1045,8 @@ main.shell:focus-visible {
 .admin-content {
   min-width: 0;          /* permite que tabelas largas façam scroll, sem
                             expandir o grid */
-  min-height: 620px;     /* mantém altura estável entre abas curtas e longas */
+  width: 100%;
+  min-height: 720px;     /* mantém altura estável entre abas curtas e longas */
 }
 
 /* Tabelas dentro do admin podem rolar horizontalmente em vez de
