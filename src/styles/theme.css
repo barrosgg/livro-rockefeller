@@ -871,6 +871,103 @@ main.shell:focus-visible {
   .np-total-block { padding: 0 12px; }
 }
 
+/* ---------- Meus Trabalhos: chips de itens, remuneração, recibo ---------- */
+
+/* KPI variant pra cards de dinheiro */
+.kpi-card.kpi-money { border-left-color: var(--olive); }
+.kpi-card.kpi-money .kpi-icon { background: rgba(90,107,64,.12); color: var(--olive); }
+.kpi-card.kpi-money .kpi-value { color: var(--olive); }
+
+/* Chips de itens produzidos */
+.claim-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 360px;
+}
+.claim-item-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 9px;
+  background: var(--paper-soft);
+  border: 1px solid var(--paper-edge);
+  border-radius: 999px;
+  font-size: .82rem;
+  line-height: 1.3;
+  font-family: 'Lora', serif;
+}
+.claim-item-chip .chip-name {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.claim-item-chip .chip-qty {
+  color: var(--gold-deep);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: .76rem;
+}
+.claim-item-chip.removed {
+  background: rgba(150,60,46,.08);
+  border-color: rgba(150,60,46,.25);
+  color: var(--burgundy);
+}
+
+/* Célula de remuneração — líquido em destaque */
+.remun-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.remun-liquido {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--olive);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.remun-bruto {
+  font-size: .7rem;
+  color: var(--ink-mute);
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Linha de claim pago — leve realce verde-oliva */
+.pedido-row.row-pago {
+  background: linear-gradient(90deg, rgba(90,107,64,.06) 0%, transparent 60%);
+}
+.pedido-row.row-pago:hover {
+  background: linear-gradient(90deg, rgba(90,107,64,.12) 0%, rgba(176,141,61,.04) 70%);
+}
+
+/* Botão Recibo (igual visual ao btn-abrir mas burgundy) */
+.btn-recibo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(132,36,25,.08);
+  border: 1px solid var(--burgundy);
+  border-radius: var(--r-sm);
+  font-family: 'Lora', serif;
+  font-size: .82rem;
+  color: var(--burgundy);
+  text-decoration: none;
+  transition: all .15s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.btn-recibo:hover {
+  background: var(--burgundy);
+  color: var(--paper);
+  text-decoration: none;
+}
+
+.cell-actions { white-space: nowrap; }
+
 /* ---------- Barra de progresso de produção (lista de Pedidos) ---------- */
 .prod-progress {
   margin-top: 6px;
