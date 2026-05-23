@@ -151,20 +151,21 @@ export default function NovoPedido() {
     if (status === 'aprovado' && !prazo) { setErro('Defina o prazo de entrega para aprovar.'); return; }
     setSalvando(true);
 
+    // Passo 1: SEMPRE insere como rascunho. Isso evita que o trigger
+    // do Discord dispare antes de termos os order_items inseridos.
     const { data: order, error: e1 } = await supabase.from('orders').insert({
       numero_nota: numero,
       cliente: cliente || null,
       anotacoes: anotacoes || null,
       desconto_pct: calc.pctEfetivo,
-      status,
+      status: 'rascunho',
       prazo_entrega: prazo ? new Date(prazo).toISOString() : null,
       criado_por: user.id,
-      aprovado_por: status === 'aprovado' ? user.id : null,
-      aprovado_em: status === 'aprovado' ? new Date().toISOString() : null,
     }).select().single();
 
     if (e1) { setErro(e1.message); setSalvando(false); return; }
 
+    // Passo 2: insere os itens
     const payload = itens.map(i => ({
       order_id: order.id,
       product_id: i.product.id,
@@ -172,8 +173,20 @@ export default function NovoPedido() {
       preco_unit: i.preco_unit,
     }));
     const { error: e2 } = await supabase.from('order_items').insert(payload);
+    if (e2) { setErro(e2.message); setSalvando(false); return; }
+
+    // Passo 3: se queria aprovar, agora atualiza pra 'aprovado'.
+    // Aqui o trigger do Discord enxerga os itens corretamente.
+    if (status === 'aprovado') {
+      const { error: e3 } = await supabase.from('orders').update({
+        status: 'aprovado',
+        aprovado_por: user.id,
+        aprovado_em: new Date().toISOString(),
+      }).eq('id', order.id);
+      if (e3) { setErro(e3.message); setSalvando(false); return; }
+    }
+
     setSalvando(false);
-    if (e2) { setErro(e2.message); return; }
     limparDraft();
     navigate(`/pedidos/${order.short_code || order.id}`);
   }, [itens, prazo, numero, cliente, anotacoes, calc.pctEfetivo, user, limparDraft, navigate]);

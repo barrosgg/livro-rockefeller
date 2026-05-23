@@ -171,6 +171,14 @@ export default function PedidoDetalhe() {
       );
       if (e2) throw e2;
 
+      // Notifica Discord SÓ depois dos itens estarem inseridos (timing crítico)
+      // Se a RPC não existir (migration 023 não rodada), ignora o erro silenciosamente
+      try {
+        await supabase.rpc('notify_claim_assumido', { p_claim_id: claim.id });
+      } catch (notifyErr) {
+        console.warn('notify_claim_assumido falhou (ok se migration 023 não rodada):', notifyErr);
+      }
+
       if (pedido.status === 'aprovado') {
         await supabase.from('orders').update({ status: 'em_producao' }).eq('id', orderId);
       }
