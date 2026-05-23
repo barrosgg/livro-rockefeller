@@ -969,7 +969,13 @@ main.shell:focus-visible {
 .cell-actions { white-space: nowrap; }
 
 /* ---------- Página Administração (sidebar tabs + tab header) ---------- */
-.admin-page { padding-bottom: 32px; }
+.admin-page {
+  padding-bottom: 32px;
+  /* Garante que o card vintage sempre ocupa toda a largura do .shell,
+     independente do conteúdo de cada aba. */
+  width: 100%;
+  box-sizing: border-box;
+}
 
 .admin-header { margin-bottom: 12px; }
 .admin-header h1 { margin-bottom: 2px; }
@@ -1029,7 +1035,24 @@ main.shell:focus-visible {
 .admin-tab.active .admin-tab-icon { color: var(--gold); }
 .admin-tab-label { letter-spacing: .01em; }
 
-.admin-content { min-width: 0; }
+.admin-content {
+  min-width: 0;          /* permite que tabelas largas façam scroll, sem
+                            expandir o grid */
+  min-height: 620px;     /* mantém altura estável entre abas curtas e longas */
+}
+
+/* Tabelas dentro do admin podem rolar horizontalmente em vez de
+   forçar a página a crescer. Evita o "salta de tamanho" entre abas.
+   Em mobile (<= 720px) cede o controle pro .responsive (vira cards). */
+@media (min-width: 721px) {
+  .admin-content table.book {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+  .admin-content table.book thead,
+  .admin-content table.book tbody { display: table; width: 100%; }
+}
 
 .admin-tab-header {
   padding-bottom: 16px;
