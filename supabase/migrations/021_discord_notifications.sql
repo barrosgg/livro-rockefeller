@@ -90,9 +90,9 @@ begin
         jsonb_build_object('name', '💰 Total', 'value', '$' || to_char(total, 'FM999G999D00'), 'inline', true),
         jsonb_build_object('name', '⏰ Prazo', 'value', prazo_texto, 'inline', true),
         jsonb_build_object('name', '📦 Itens', 'value', coalesce(itens_texto, '—'), 'inline', false),
-        jsonb_build_object('name', '🔗 Acompanhar', 'value', '[Ver no Caderno →](' || link_publico || ')', 'inline', false)
+        jsonb_build_object('name', '🔗 Acompanhar', 'value', '[Ver no Livro →](' || link_publico || ')', 'inline', false)
       ),
-      'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+      'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
       'timestamp', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
     ));
   end if;
@@ -117,7 +117,7 @@ begin
         else 'Pedido cancelado pelo gerente.'
       end,
       'color',     8659993,    -- burgundy #842419
-      'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+      'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
       'timestamp', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
     ));
   end if;
@@ -142,7 +142,7 @@ begin
         else 'Pedido finalizado.'
       end || E'\nTodos os itens foram entregues e pagos.',
       'color',     5925696,    -- olive #5A6B40
-      'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+      'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
       'timestamp', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
     ));
   end if;
@@ -195,7 +195,7 @@ begin
         'value', saldo_aberto::text || ' unidades restantes',
         'inline', true)
     ),
-    'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+    'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
     'timestamp', to_char(NEW.criado_em at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
   ));
 
@@ -226,7 +226,7 @@ begin
       'title',       '📦  Entrega no baú · Nº ' || pedido_num,
       'description', '**' || trab_nome || '** marcou a produção como entregue. Aguardando confirmação de pagamento do gerente.',
       'color',     12028749,   -- gold
-      'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+      'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
       'timestamp', to_char(coalesce(NEW.entregue_em, now()) at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
     ));
   end if;
@@ -280,7 +280,7 @@ begin
         jsonb_build_object('name', '📊 Bruto total',            'value', '$' || to_char(bruto,             'FM999G999D00'), 'inline', true),
         jsonb_build_object('name', '📜 Recibo',                 'value', '[Ver recibo →](' || recibo_link || ')',           'inline', false)
       ),
-      'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller'),
+      'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller'),
       'timestamp', to_char(coalesce(NEW.pago_em, now()) at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
     ));
   end if;
@@ -309,14 +309,14 @@ begin
   end if;
 
   perform notify_discord(canal, jsonb_build_object(
-    'title',       '🌾  Teste · Caderno da Fazenda',
+    'title',       '🌾  Teste · Livro da Fazenda',
     'description', 'Se você está vendo esta mensagem, o webhook do canal **' || canal || '** está configurado corretamente.',
     'color',     12028749,
     'fields',    jsonb_build_array(
       jsonb_build_object('name', 'Canal', 'value', canal, 'inline', true),
       jsonb_build_object('name', 'Status', 'value', '✓ funcionando', 'inline', true)
     ),
-    'footer',    jsonb_build_object('text', 'Caderno da Fazenda Rockefeller · teste manual'),
+    'footer',    jsonb_build_object('text', 'Livro da Fazenda Rockefeller · teste manual'),
     'timestamp', to_char(now() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
   ));
 

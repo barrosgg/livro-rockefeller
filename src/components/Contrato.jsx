@@ -81,7 +81,7 @@ export default function Contrato({ profile, onAssinar }) {
 
         <h3>Cláusula Segunda — Da Distribuição e Pagamento</h3>
         <p>
-          Os serviços serão distribuídos por meio do <em>Caderno da Fazenda Rockefeller</em>,
+          Os serviços serão distribuídos por meio do <em>Livro da Fazenda Rockefeller</em>,
           registro oficial de orçamentos, pedidos e produção. A remuneração será calculada
           conforme a tabela de preços vigente para cada item, descontada a comissão da Fazenda.
           Os pagamentos serão efetuados em conta bancária ou em espécie na Fazenda após

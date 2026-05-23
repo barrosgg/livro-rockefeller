@@ -1081,14 +1081,14 @@ function DiscordTab() {
           <li>No Discord, vá no canal desejado e clique no <strong>⚙ ícone de configurações</strong> ao lado do nome do canal.</li>
           <li>Clique em <strong>Integrações</strong> no menu lateral.</li>
           <li>Clique em <strong>Webhooks</strong> → <strong>Novo Webhook</strong>.</li>
-          <li>Dê um nome (ex: "Caderno da Fazenda") e opcionalmente um avatar (use o logo da família).</li>
+          <li>Dê um nome (ex: "Livro da Fazenda") e opcionalmente um avatar (use o logo da família).</li>
           <li>Clique em <strong>Copiar URL do Webhook</strong>.</li>
           <li>Cole aqui no campo correspondente e clique em <strong>Salvar webhooks</strong>.</li>
           <li>Clique em <strong>✓ Testar canal</strong> para confirmar que está funcionando.</li>
         </ol>
         <p className="muted small">
           <strong>Segurança:</strong> qualquer pessoa com o URL pode postar no canal. Mantenha em sigilo.
-          Apenas o Proprietário enxerga esses URLs no Caderno (RLS no Postgres protege isso).
+          Apenas o Proprietário enxerga esses URLs no Livro (RLS no Postgres protege isso).
         </p>
       </details>
     </>

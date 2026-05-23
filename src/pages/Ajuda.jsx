@@ -12,7 +12,7 @@ export default function Ajuda() {
     <div className="page" style={{ maxWidth: 880, margin: '0 auto' }}>
       <h1 className="mt-0">Como Funciona a Fazenda</h1>
       <p className="muted">
-        Guia rápido do Caderno da Fazenda Rockefeller. Tudo o que você precisa saber para
+        Guia rápido do Livro da Fazenda Rockefeller. Tudo o que você precisa saber para
         trabalhar conosco.
       </p>
       <hr className="divider" />

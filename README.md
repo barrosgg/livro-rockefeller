@@ -1,8 +1,8 @@
-# Caderno da Fazenda Rockefeller
+# Livro da Fazenda Rockefeller
 
 Sistema de gestão de pedidos, produção e pagamentos da **Família Rockefeller** — fazenda fictícia de RP em Red Dead Redemption 2. Sucessor da [calculadora original](https://github.com/barrosgg/rockefeller).
 
-> Caderno onde se registram orçamentos, produção, entregas e pagamentos da fazenda. Cliente abre um pedido com o Gerente, trabalhadores assumem partes da produção, entregam no baú e recebem remuneração (75% líquido, 25% comissão da Fazenda).
+> Livro onde se registram orçamentos, produção, entregas e pagamentos da fazenda. Cliente abre um pedido com o Gerente, trabalhadores assumem partes da produção, entregam no baú e recebem remuneração (75% líquido, 25% comissão da Fazenda).
 
 ## Stack
 

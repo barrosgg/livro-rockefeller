@@ -167,7 +167,7 @@ export default function PedidoPublico() {
 
         <div className="divider" />
         <p className="muted small center">
-          Esta página atualiza automaticamente. Caderno da Fazenda Rockefeller.
+          Esta página atualiza automaticamente. Livro da Fazenda Rockefeller.
         </p>
       </div>
     </div>

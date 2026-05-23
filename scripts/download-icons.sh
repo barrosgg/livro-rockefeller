@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Baixa os ícones usados pelo Caderno da Fazenda Rockefeller
+# Baixa os ícones usados pelo Livro da Fazenda Rockefeller
 # de game-icons.net (CC BY 3.0). Salva em public/icons/.
 #
 # Apenas slugs CONFIRMADOS como existentes em game-icons.net.

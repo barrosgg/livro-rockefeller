@@ -34,7 +34,7 @@ export default function Login() {
           <div className="login-decor-line" />
 
           <p className="ornament fade-up delay-2" style={{ marginTop: 16 }}>
-            Caderno da Fazenda · Pedidos, Produção &amp; Pagamentos
+            Livro da Fazenda · Pedidos, Produção &amp; Pagamentos
           </p>
 
           <p className="muted fade-up delay-3" style={{ fontSize: '.92rem', marginTop: 14, lineHeight: 1.55 }}>

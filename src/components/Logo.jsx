@@ -75,7 +75,7 @@ export default function Logo({ size = 40, withText = false, textColor = 'current
             color: 'var(--ink-mute)',
             marginTop: 3,
           }}>
-            Caderno da Fazenda
+            Livro da Fazenda
           </span>
         </span>
       )}

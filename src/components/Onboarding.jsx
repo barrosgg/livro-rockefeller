@@ -39,7 +39,7 @@ export default function Onboarding({ profile, onClose }) {
       conteudo: (
         <>
           <p>
-            Este é o <strong>Caderno da Fazenda</strong> — onde registramos todos os
+            Este é o <strong>Livro da Fazenda</strong> — onde registramos todos os
             orçamentos, produções e pagamentos da nossa propriedade em <em>Flatneck Station,
             New Hanover</em>.
           </p>

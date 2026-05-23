@@ -41,7 +41,7 @@ export default function CredencialPublica() {
       <div className="credencial-stage">
         <Credencial profile={profile} />
         <p className="muted center mt-3" style={{ fontSize: '.8rem', fontStyle: 'italic' }}>
-          Credencial oficial · Família Rockefeller · Caderno da Fazenda
+          Credencial oficial · Família Rockefeller · Livro da Fazenda
         </p>
       </div>
     </div>

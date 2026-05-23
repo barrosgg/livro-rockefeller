@@ -176,10 +176,10 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
           </div>
         </section>
 
-        {/* ===== Perfil do Caderno (editável) ===== */}
+        {/* ===== Perfil do Livro (editável) ===== */}
         <section className="ud-section">
           <div className="flex between center-y wrap">
-            <h3 className="ud-section-title"><span className="ud-icon">☥</span> Perfil do Caderno</h3>
+            <h3 className="ud-section-title"><span className="ud-icon">☥</span> Perfil do Livro</h3>
             {!editing && <button className="btn ghost sm" onClick={() => setEditing(true)}>✎ Editar</button>}
           </div>
 

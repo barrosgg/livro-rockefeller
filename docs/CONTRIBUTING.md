@@ -1,6 +1,6 @@
 # Contribuindo
 
-Guia para quem mexe no código do Caderno. Foco em convenções práticas — não em filosofia.
+Guia para quem mexe no código do Livro. Foco em convenções práticas — não em filosofia.
 
 ## Setup
 

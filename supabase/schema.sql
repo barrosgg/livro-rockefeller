@@ -1,5 +1,5 @@
 -- =====================================================================
--- Caderno da Fazenda Rockefeller — Schema Supabase
+-- Livro da Fazenda Rockefeller — Schema Supabase
 -- Execute em: Supabase Dashboard > SQL Editor (Run)
 -- =====================================================================
 
