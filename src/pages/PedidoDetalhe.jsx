@@ -153,7 +153,7 @@ export default function PedidoDetalhe() {
     if (!dataPrevista) { setErro('Informe quando você pretende entregar no baú.'); return; }
     for (const e of escolhidos) {
       const aberto = balance[e.order_item_id]?.quantidade_em_aberto ?? 0;
-      if (e.quantidade > aberto) { setErro('Você marcou mais unidades do que ainda está em aberto.'); return; }
+      if (e.quantidade > aberto) { setErro('Você marcou mais unidades do que ainda há para produzir.'); return; }
     }
 
     setCriandoClaim(true);
@@ -246,7 +246,7 @@ export default function PedidoDetalhe() {
       `Prazo: **${pedido.prazo_entrega ? new Date(pedido.prazo_entrega).toLocaleString('pt-BR') : 'a definir'}**`,
       `Total: **${fmt(agg.total)}** · Restam **${agg.qtdAberto}/${agg.qtdTotal}** unidades para produzir`,
       '',
-      '**Itens em aberto:**',
+      '**Itens para produzir:**',
       ...itens
         .filter(it => (balance[it.id]?.quantidade_em_aberto || 0) > 0)
         .map(it => `• ${it.product.nome} — ${balance[it.id]?.quantidade_em_aberto}× a ${fmt(it.preco_unit)}`),

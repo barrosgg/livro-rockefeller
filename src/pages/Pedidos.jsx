@@ -250,7 +250,7 @@ export default function Pedidos() {
           <div className="kpi-icon">⊡</div>
           <div className="kpi-body">
             <div className="kpi-value">{kpis.emAberto}</div>
-            <div className="kpi-label">unidades em aberto</div>
+            <div className="kpi-label">unidades para produzir</div>
           </div>
         </div>
         <div className={`kpi-card ${kpis.atrasados > 0 ? 'danger' : ''}`}>
@@ -378,14 +378,14 @@ export default function Pedidos() {
                         return (
                           <div
                             className="prod-progress"
-                            aria-label={`${b.aberto} unidades em aberto de ${b.total} totais`}>
+                            aria-label={`${b.aberto} unidades para produzir de ${b.total} totais`}>
                             <div className="prod-progress-bar">
                               <div className="prod-progress-fill" style={{ width: pctAssumida + '%' }} />
                             </div>
                             <div className="prod-progress-text">
                               {tudoAssumido
                                 ? <em>✓ Tudo assumido</em>
-                                : <><strong>{b.aberto}</strong> em aberto · {b.total} total</>}
+                                : <><strong>{b.aberto}</strong> para produzir · {b.total} total</>}
                             </div>
                           </div>
                         );
