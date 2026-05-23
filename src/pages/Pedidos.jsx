@@ -8,6 +8,55 @@ import { statusLabel } from '../lib/calc.js';
 
 const STATUS_FILTROS = ['todos','rascunho','aprovado','em_producao','entregue','pago','concluido','cancelado'];
 
+const STATUS_ICON = {
+  rascunho: '✎',
+  aprovado: '✓',
+  em_producao: '⚙',
+  entregue: '⊠',
+  pago: '◆',
+  concluido: '★',
+  cancelado: '✕',
+};
+
+const STATUS_ATIVOS = ['aprovado','em_producao','entregue','pago'];
+
+/** Devolve string da data + relativa + classe de urgência */
+function fmtPrazo(d) {
+  if (!d) return { text: '—', rel: '', cls: 'muted' };
+  const date = new Date(d);
+  const now = new Date();
+  const diffMs = date - now;
+  const diffDays = Math.floor((date.setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / 86400000);
+  const text = new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+  if (diffMs < 0) {
+    const od = Math.abs(diffDays);
+    return { text, rel: od === 0 ? 'atrasado' : `atrasado há ${od}d`, cls: 'overdue' };
+  }
+  if (diffDays === 0) return { text, rel: 'hoje', cls: 'urgent' };
+  if (diffDays === 1) return { text, rel: 'amanhã', cls: 'warn' };
+  if (diffDays <= 3) return { text, rel: `em ${diffDays}d`, cls: 'warn' };
+  if (diffDays <= 7) return { text, rel: `em ${diffDays}d`, cls: 'soon' };
+  return { text, rel: `em ${diffDays}d`, cls: '' };
+}
+
+/** Data de criação relativa */
+function fmtCriado(d) {
+  if (!d) return '—';
+  const diffDays = Math.floor((new Date().setHours(0,0,0,0) - new Date(d).setHours(0,0,0,0)) / 86400000);
+  if (diffDays === 0) return 'hoje';
+  if (diffDays === 1) return 'ontem';
+  if (diffDays < 7) return `há ${diffDays}d`;
+  if (diffDays < 30) return `há ${Math.floor(diffDays / 7)}sem`;
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+
+/** Primeira letra do nome do cliente em maiúscula */
+function inicial(nome) {
+  if (!nome) return '?';
+  const t = String(nome).trim();
+  return t ? t.charAt(0).toUpperCase() : '?';
+}
+
 export default function Pedidos() {
   const { profile } = useAuth();
   const { showToast, confirmar } = useUI() || {};
@@ -71,6 +120,23 @@ export default function Pedidos() {
     pedidos.forEach(p => { c[p.status] = (c[p.status] || 0) + 1; });
     return c;
   }, [pedidos]);
+
+  // ---------- KPIs ----------
+  const kpis = useMemo(() => {
+    const ativos = pedidos.filter(p => STATUS_ATIVOS.includes(p.status)).length;
+    const emAberto = Object.values(balances).reduce((s, b) => s + (b?.aberto || 0), 0);
+    const agora = new Date();
+    const atrasados = pedidos.filter(p =>
+      p.prazo_entrega &&
+      !['concluido','cancelado','pago'].includes(p.status) &&
+      new Date(p.prazo_entrega) < agora
+    ).length;
+    const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+    const concluidosMes = pedidos.filter(p =>
+      p.status === 'concluido' && new Date(p.criado_em) >= inicioMes
+    ).length;
+    return { ativos, emAberto, atrasados, concluidosMes };
+  }, [pedidos, balances]);
 
   const lista = useMemo(() => {
     let arr = [...pedidos];
@@ -154,21 +220,63 @@ export default function Pedidos() {
     <div className="page">
       <div className="flex between center-y wrap gap-2">
         <h1 className="mt-0">Pedidos</h1>
-        <input
-          type="text"
-          placeholder="Buscar por número, cliente ou código…"
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
-          style={{ minWidth: 280, maxWidth: 320 }}
-        />
+        <div className="search-wrap">
+          <span className="search-icon" aria-hidden="true">⌕</span>
+          <input
+            type="text"
+            placeholder="Buscar por número, cliente ou código…"
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            className="search-input"
+          />
+          {busca && (
+            <button type="button" className="search-clear"
+              aria-label="Limpar busca"
+              onClick={() => setBusca('')}>✕</button>
+          )}
+        </div>
       </div>
 
-      <div className="flex gap-1 wrap mt-2">
+      {/* ---------- KPIs ---------- */}
+      <div className="kpi-grid mt-2">
+        <div className="kpi-card">
+          <div className="kpi-icon">⚙</div>
+          <div className="kpi-body">
+            <div className="kpi-value">{kpis.ativos}</div>
+            <div className="kpi-label">em andamento</div>
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-icon">⊡</div>
+          <div className="kpi-body">
+            <div className="kpi-value">{kpis.emAberto}</div>
+            <div className="kpi-label">unidades em aberto</div>
+          </div>
+        </div>
+        <div className={`kpi-card ${kpis.atrasados > 0 ? 'danger' : ''}`}>
+          <div className="kpi-icon">!</div>
+          <div className="kpi-body">
+            <div className="kpi-value">{kpis.atrasados}</div>
+            <div className="kpi-label">atrasados</div>
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-icon">★</div>
+          <div className="kpi-body">
+            <div className="kpi-value">{kpis.concluidosMes}</div>
+            <div className="kpi-label">concluídos no mês</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-1 wrap mt-2 filter-chips">
         {STATUS_FILTROS.map(s => (
           <button key={s}
-            className={`btn sm ${filtro === s ? '' : 'ghost'}`}
+            className={`chip ${filtro === s ? 'active' : ''} ${s !== 'todos' ? `chip-${s}` : ''}`}
             onClick={() => setFiltro(s)}>
-            {s === 'todos' ? 'Todos' : statusLabel(s)} · {contagens[s] || 0}
+            {s !== 'todos' && <span className="chip-icon">{STATUS_ICON[s]}</span>}
+            {s === 'todos' ? 'Todos' : statusLabel(s)}
+            <span className="chip-count">{contagens[s] || 0}</span>
           </button>
         ))}
       </div>
@@ -242,8 +350,10 @@ export default function Pedidos() {
             </tr>
           </thead>
           <tbody>
-            {lista.map(p => (
-              <tr key={p.id} style={selecionados.has(p.id) ? { background: 'rgba(176,141,61,.10)' } : null}>
+            {lista.map(p => {
+              const prazo = fmtPrazo(p.prazo_entrega);
+              return (
+              <tr key={p.id} className={`pedido-row ${selecionados.has(p.id) ? 'selected' : ''} ${prazo.cls === 'overdue' ? 'row-overdue' : ''}`}>
                 {isManager && (
                   <td data-label="Selecionar">
                     <input type="checkbox"
@@ -252,37 +362,66 @@ export default function Pedidos() {
                       onChange={() => toggleSel(p.id)} />
                   </td>
                 )}
-                <td className="num" data-label="Nº Nota">Nº {p.numero_nota}</td>
-                <td data-label="Cliente">
-                  <div>{p.cliente || <span className="muted">—</span>}</div>
-                  {MOSTRA_PROGRESSO.has(p.status) && balances[p.id] && balances[p.id].total > 0 && (() => {
-                    const b = balances[p.id];
-                    const pctAssumida = Math.min(100, Math.round((b.assumida / b.total) * 100));
-                    const tudoAssumido = b.aberto === 0;
-                    return (
-                      <div
-                        className="prod-progress"
-                        aria-label={`${b.aberto} unidades em aberto de ${b.total} totais`}>
-                        <div className="prod-progress-bar">
-                          <div className="prod-progress-fill" style={{ width: pctAssumida + '%' }} />
-                        </div>
-                        <div className="prod-progress-text">
-                          {tudoAssumido ? (
-                            <em>✓ Tudo assumido</em>
-                          ) : (
-                            <><strong>{b.aberto}</strong> em aberto · {b.total} total</>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                <td className="num cell-num" data-label="Nº Nota">
+                  <span className="num-hash">Nº</span>
+                  <span className="num-value">{p.numero_nota}</span>
                 </td>
-                <td data-label="Status"><span className={`badge ${p.status}`}>{statusLabel(p.status)}</span></td>
-                <td data-label="Prazo">{p.prazo_entrega ? new Date(p.prazo_entrega).toLocaleString('pt-BR') : <span className="muted">—</span>}</td>
-                <td data-label="Criado">{new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>
-                <td data-label=""><Link className="btn ghost sm" to={`/pedidos/${p.short_code || p.id}`}>abrir</Link></td>
+                <td data-label="Cliente">
+                  <div className="client-cell">
+                    <span className="client-initial" aria-hidden="true">{inicial(p.cliente)}</span>
+                    <div className="client-info">
+                      <div className="client-name">{p.cliente || <span className="muted">Sem cliente</span>}</div>
+                      {MOSTRA_PROGRESSO.has(p.status) && balances[p.id] && balances[p.id].total > 0 && (() => {
+                        const b = balances[p.id];
+                        const pctAssumida = Math.min(100, Math.round((b.assumida / b.total) * 100));
+                        const tudoAssumido = b.aberto === 0;
+                        return (
+                          <div
+                            className="prod-progress"
+                            aria-label={`${b.aberto} unidades em aberto de ${b.total} totais`}>
+                            <div className="prod-progress-bar">
+                              <div className="prod-progress-fill" style={{ width: pctAssumida + '%' }} />
+                            </div>
+                            <div className="prod-progress-text">
+                              {tudoAssumido
+                                ? <em>✓ Tudo assumido</em>
+                                : <><strong>{b.aberto}</strong> em aberto · {b.total} total</>}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Status">
+                  <span className={`badge ${p.status}`} title={statusLabel(p.status)}>
+                    <span className="badge-icon" aria-hidden="true">{STATUS_ICON[p.status]}</span>
+                    {statusLabel(p.status)}
+                  </span>
+                </td>
+                <td data-label="Prazo">
+                  {p.prazo_entrega ? (
+                    <div className={`prazo-cell prazo-${prazo.cls}`}>
+                      <div className="prazo-date">{prazo.text}</div>
+                      {prazo.rel && <div className="prazo-rel">{prazo.rel}</div>}
+                    </div>
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
+                </td>
+                <td data-label="Criado">
+                  <div className="criado-cell">
+                    <div className="criado-rel">{fmtCriado(p.criado_em)}</div>
+                    <div className="criado-abs">{new Date(p.criado_em).toLocaleDateString('pt-BR')}</div>
+                  </div>
+                </td>
+                <td data-label="">
+                  <Link className="btn-abrir" to={`/pedidos/${p.short_code || p.id}`} aria-label={`Abrir pedido ${p.numero_nota}`}>
+                    Abrir <span aria-hidden="true">→</span>
+                  </Link>
+                </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       )}
