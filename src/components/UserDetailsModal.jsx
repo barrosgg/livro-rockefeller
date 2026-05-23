@@ -128,9 +128,11 @@ export default function UserDetailsModal({ userId, onClose, onUpdate }) {
   const customClaims = meta.custom_claims || {};
   // Discord mudou nomes dos campos em 2023 — checa todas as variantes
   const discordId      = meta.provider_id || meta.sub || customClaims.id || '—';
-  const discordUsername = meta.preferred_username || meta.user_name ||
-                          meta.username || meta.global_name || meta.name ||
-                          customClaims.global_name || customClaims.username || '—';
+  // Discord moderno usa "username#0" pra indicar "sem discriminador" — limpa esse sufixo
+  const rawUsername = meta.preferred_username || meta.user_name ||
+                      meta.username || meta.global_name || meta.name ||
+                      customClaims.global_name || customClaims.username || '';
+  const discordUsername = rawUsername.replace(/#0$/, '') || '—';
   const discordDisplayName = meta.full_name || meta.name || customClaims.global_name || '—';
   const linkCredencial = `${window.location.origin}/c/${p.public_code}`;
 
